@@ -70,9 +70,11 @@ int main(void) {
 
 	using Type1 = type_utils::list<ID, Name, Age>::union_with<ID, Name, Belongs>;
 	using Type2 = type_utils::list<Belongs, Name, Age, ID>::remove<Age, Phone, Belongs>;
+	using Type3 = Data<Data<ID, Name, Age>, Data<Age, ID, Belongs>>;
 
 	std::cout << typeid(Type1).name() << std::endl;
 	std::cout << typeid(Type2).name() << std::endl;
+	std::cout << typeid(Type3).name() << std::endl;
 
 
 	Data person(ID{152}, Name{"Masaharu Kato"}, Age{21});

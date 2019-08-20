@@ -4,7 +4,7 @@
 namespace cype {
 	
 	template <class... Types>
-	class Data : public Types... {
+	class Data : public virtual Types... {
 	public:
 		using This = Data<Types...>;
 
