@@ -4,19 +4,17 @@
 namespace cype {
 	
 	template <class... Types>
-	class Data : public virtual Types... {
+	class Data : public Types... {
 	public:
-		using This = Data<Types...>;
-
-		template <class Type>
-		static constexpr bool contains = type_utils<Types...>::contains<Type>;
+		using type_list = type_utils::list<Types...>;
+		constexpr static size_t size = sizeof...(Types);
 
 		Data(const Types&... args)
 			: Types(args)... {}
 
 		template <class... _Types>
 		Data(const _Types&... vals)
-			: Data(Data<_Types...>(vals)) {}
+			: Data(Data<_Types...>(vals...)) {}
 
 		template <class... _Types>
 		Data(const Data<_Types...>& data)
@@ -24,7 +22,7 @@ namespace cype {
 
 
 		template <class... _Types>
-		Data<_Types...> getData() const {
+		Data<_Types...> get_data() const {
 			return {*this};
 		}
 
@@ -33,45 +31,116 @@ namespace cype {
 			return {*this};
 		}
 
+		template <size_t _Index>
+		auto get() const {
+			return get<type_list::get<_Index>>();
+		}
+
+
 		template <class... _Types>
-		Data<_Types&...> getRefData() {
+		Data<_Types&...> get_ref_data() {
 			return {*this};
 		}
 
 		template <class _Type>
-		_Type& getRef() {
+		_Type& get_ref() {
 			return {*this};
+		}
+
+		template <size_t _Index>
+		auto get_ref() const {
+			return get_ref<type_list::get<_Index>>();
+		}
+
+		template <class... _Types>
+		auto pushed_front(const _Types&... _vals) const {
+			return Data<_Types..., Types...>(_vals..., *this);
+		}
+
+		template <class... _Types>
+		auto pushed_back(const _Types&... _vals) const {
+			return Data<Types..., _Types...>(*this, _vals...);
+		}
+
+		template <class... _Types>
+		auto pushed_data_front(const Data<_Types...>& _data) const {
+			return Data<_Types..., Types...>(_data, *this);
+		}
+
+		template <class... _Types>
+		auto pushed_data_back(const Data<_Types...>& _data) const {
+			return Data<Types..., _Types...>(*this, _data);
 		}
 
 
 		template <class _Type>
-		This set(const _Type& val) {
-			static_assert(contains<_Type>, "This data type does not contain specified type.");
+		void set(const _Type& val) {
 			(_Type&)*this = val;
-			return *this;
 		}
 
 
 		template <class _First, class... _Rests>
-		This set(const _First& first_val, _Rests&&... rest_vals) {
+		void set(const _First& first_val, _Rests&&... rest_vals) {
 			set(first_val);
-			return set(rest_vals...);
 		}
 		
-		template <class _First, class... _Rests>
-		This set(const Data<_First, _Rests...>& data) {
-			set(data.get<_First>());
-
+		template <class... _Types>
+		void set(const Data<_Types...>& data) {
+			set<_Types>(data)...;
 		}
 
+
+		template <class... _Types>
+		auto removed() const {
+			return (typename type_list::remove<_Types...>::apply<Data>)*this;
+		}
+
+
+		template <class... _Types>
+		auto overwritten(const Data<_Types...>& _data) const {
+			return _data.pushed_data_front(removed<_Types...>());
+		}
+
+
 		template <class _Visiter>
-		auto visit(const _Visiter& func) const {
+		auto visit(_Visiter& func) const {
 			return func(get<Types>()...);
 		}
 
 		template <class _Visiter>
-		auto visitRef(const _Visiter& func) {
-			return func(getRef<Types>()...);
+		auto visit_ref(_Visiter& func) {
+			return func(get_ref<Types>()...);
+		}
+
+		template <class _StaticVisiter>
+		auto visit() const {
+			return _StaticVisiter::call(get<Types>()...);
+		}
+
+		template <class _StaticVisiter>
+		auto visit_ref() {
+			return _StaticVisiter::call(get_ref<Types>()...);
+		}
+		
+		template <class _Visiter, size_t _Index = 0>
+		void visit_each(_Visiter& func) const {
+			func(get<_Index>());
+			if constexpr(_Index + 1 < size) visit_each(func, _Index + 1);
+		}
+
+		template <class _Visiter, size_t _Index = 0>
+		void visit_each_ref(_Visiter& func) {
+			func(get_ref<_Index>());
+			if constexpr(_Index + 1 < size) visit_each_ref(func, _Index + 1);
+		}
+		
+		template <class _Visiter, size_t _Index = 0>
+		auto visit_map(_Visiter& func) const {
+			if constexpr(_Index < size){
+				return visit_each<_Visiter, _Index + 1>(func).pushed_front(func(get<_Index>()));
+			}else{
+				return Data();
+			}
 		}
 
 		template <class _Type>

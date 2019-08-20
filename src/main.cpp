@@ -59,12 +59,15 @@ public:
 
 int main(void) {
 
-	Data person1(ID{152}, Name{"Masaharu Kato"}, Age{21});
-	Data person2(Age{23}, ID{182}, Belongs{"Student"});
+	Data data1(ID{152}, Name{"Masaharu Kato"}, Age{21});
+	Data data2(Belongs{"Student"});
+	Data data3(ID{163}, Age{25}, Phone{"090-1234-5678"});
 
-	Data person(person1, person2);
+	Data person1 = data1.pushed_data_back(data2);
+	Data person2 = data1.overwritten(data3);
 
-	person.visit(OutputFunctions(std::cout));
+	person1.visit(OutputFunctions(std::cout));
+	person2.visit(OutputFunctions(std::cout));
 
 	return 0;
 }
