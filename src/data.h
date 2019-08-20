@@ -64,13 +64,13 @@ namespace cype {
 
 		}
 
-		template <class _FuncStruct>
-		auto visit(const _FuncStruct& func) const {
+		template <class _Visiter>
+		auto visit(const _Visiter& func) const {
 			return func(get<Types>()...);
 		}
 
-		template <class _FuncStruct>
-		auto visitRef(const _FuncStruct& func) {
+		template <class _Visiter>
+		auto visitRef(const _Visiter& func) {
 			return func(getRef<Types>()...);
 		}
 
