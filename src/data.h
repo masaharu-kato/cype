@@ -9,48 +9,53 @@ namespace cype {
 		using type_list = type_utils::list<Types...>;
 		constexpr static size_t size = sizeof...(Types);
 
+	//	Construct with specified types (corresponds to template argument deduction)
 		Data(const Types&... args)
 			: Types(args)... {}
 
+	//	Construct with any types
 		template <class... _Types>
 		Data(const _Types&... vals)
 			: Data(Data<_Types...>(vals...)) {}
 
+	//	Construct with data of any types
 		template <class... _Types>
 		Data(const Data<_Types...>& data)
 			: Types(data)... {}
 
-
+	//	Get data of particial types
 		template <class... _Types>
 		Data<_Types...> get_data() const {
 			return {*this};
 		}
 
+	//	Get value of specified type
 		template <class _Type>
 		_Type get() const {
 			return {*this};
 		}
 
+	//	Get value of specified index
 		template <size_t _Index>
 		auto get() const {
 			return get<type_list::get<_Index>>();
 		}
 
 
-		template <class... _Types>
-		Data<_Types&...> get_ref_data() {
-			return {*this};
-		}
+		//template <class... _Types>
+		//Data<_Types&...> get_ref_data() {
+		//	return {*this};
+		//}
 
-		template <class _Type>
-		_Type& get_ref() {
-			return {*this};
-		}
+		//template <class _Type>
+		//_Type& get_ref() {
+		//	return {*this};
+		//}
 
-		template <size_t _Index>
-		auto get_ref() const {
-			return get_ref<type_list::get<_Index>>();
-		}
+		//template <size_t _Index>
+		//auto get_ref() const {
+		//	return get_ref<type_list::get<_Index>>();
+		//}
 
 		template <class... _Types>
 		auto pushed_front(const _Types&... _vals) const {
@@ -107,19 +112,9 @@ namespace cype {
 			return func(get<Types>()...);
 		}
 
-		template <class _Visiter>
-		auto visit_ref(_Visiter& func) {
-			return func(get_ref<Types>()...);
-		}
-
 		template <class _StaticVisiter>
 		auto visit() const {
 			return _StaticVisiter::call(get<Types>()...);
-		}
-
-		template <class _StaticVisiter>
-		auto visit_ref() {
-			return _StaticVisiter::call(get_ref<Types>()...);
 		}
 		
 		template <class _Visiter, size_t _Index = 0>
@@ -127,27 +122,49 @@ namespace cype {
 			func(get<_Index>());
 			if constexpr(_Index + 1 < size) visit_each(func, _Index + 1);
 		}
-
-		template <class _Visiter, size_t _Index = 0>
-		void visit_each_ref(_Visiter& func) {
-			func(get_ref<_Index>());
-			if constexpr(_Index + 1 < size) visit_each_ref(func, _Index + 1);
-		}
 		
-		template <class _Visiter, size_t _Index = 0>
-		auto visit_map(_Visiter& func) const {
+		template <class _Mapper, size_t _Index = 0>
+		auto visit_map(_Mapper& func) const {
 			if constexpr(_Index < size){
-				return visit_each<_Visiter, _Index + 1>(func).pushed_front(func(get<_Index>()));
+				return visit_map<_Mapper, _Index + 1>(func).pushed_front(func(get<_Index>()));
 			}else{
 				return Data();
 			}
 		}
 
+		template <class _StaticMapper, size_t _Index = 0>
+		auto visit_map() const {
+			if constexpr(_Index < size){
+				return visit_map<_StaticMapper, _Index + 1>().pushed_front(_StaticMapper::call(get<_Index>()));
+			}else{
+				return Data();
+			}
+		}
+
+
+		//template <class _Visiter>
+		//auto visit_ref(_Visiter& func) {
+		//	return func(get_ref<Types>()...);
+		//}
+
+		//template <class _StaticVisiter>
+		//auto visit_ref() {
+		//	return _StaticVisiter::call(get_ref<Types>()...);
+		//}
+
+		//template <class _Visiter, size_t _Index = 0>
+		//void visit_each_ref(_Visiter& func) {
+		//	func(get_ref<_Index>());
+		//	if constexpr(_Index + 1 < size) visit_each_ref(func, _Index + 1);
+		//}
+
+	//	Construct specified type (apply own values to constructer arguments)
 		template <class _Type>
 		_Type construct() const {
 			return _Type((Types)(*this)...);	
 		}
-
+		
+	//	Generate specified type (apply own values to constructer arguments)
 		template <class _Type>
 		_Type* new_() const {
 			return new _Type((Types)(*this)...);
