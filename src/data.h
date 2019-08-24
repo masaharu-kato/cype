@@ -104,7 +104,7 @@ namespace cype {
 
 		template <class... _Types>
 		auto removed() const {
-			return (typename type_list::remove<_Types...>::apply<Data>)*this;
+			return (typename type_list::template remove<_Types...>::template apply_to<Data>)*this;
 		}
 
 
@@ -125,7 +125,7 @@ namespace cype {
 		}
 		
 		template <class _Visiter>
-		void visit_each(_Visiter& func) const {
+		void for_each(_Visiter& func) const {
 			_void{(func(get<Types>()), 0)...};
 		}
 		

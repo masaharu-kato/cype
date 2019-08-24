@@ -69,7 +69,7 @@ int main(void) {
 	person1.visit(OutputFunctions(std::cout));
 	person2.visit(OutputFunctions(std::cout));
 
-	person1.visit_each([](auto value){
+	person1.for_each([](auto value){
 		std::cout << value << std::endl;	
 	});
 

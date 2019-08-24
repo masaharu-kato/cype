@@ -2,7 +2,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace cype::type_utils {
+namespace cype {
+namespace type_utils {
 
 	template <class _Type1, class _Type2>
 	constexpr bool is_same = std::is_same_v<_Type1, _Type2>;
@@ -29,7 +30,7 @@ namespace cype::type_utils {
 		>;
 
 		template <template <class...> class _Class>
-		using apply = _Class<First, Rests...>;
+		using apply_to = _Class<First, Rests...>;
 
 
 		template <class Type>
@@ -37,7 +38,7 @@ namespace cype::type_utils {
 			if constexpr(is_same<First, Type>){
 				return true;
 			}else{
-				if constexpr(sizeof...(Rests)){
+				if constexpr(sizeof...(Rests) != 0){
 					return rests_list::template contains<Type>;
 				}
 			}
@@ -45,7 +46,7 @@ namespace cype::type_utils {
 		}
 
 		static constexpr bool _is_unique() {
-			if constexpr(!sizeof...(Rests)) {
+			if constexpr(sizeof...(Rests) == 0) {
 				return true;
 			}else{
 				if constexpr(!rests_list::template contains<First>){
@@ -92,7 +93,7 @@ namespace cype::type_utils {
 		using get = void;
 
 		template <template <class...> class _Class>
-		using apply = _Class<>;
+		using apply_to = _Class<>;
 
 
 		template <class _Type>
@@ -105,4 +106,5 @@ namespace cype::type_utils {
 
 	};
 
+}
 }
