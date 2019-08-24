@@ -5,5 +5,6 @@ cmake_minimum_required (VERSION 3.8)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_executable (cype_test "main.cpp")
+add_executable (vector_test "vector_test.cpp")
 
 # TODO: テストを追加し、必要な場合は、ターゲットをインストールします。

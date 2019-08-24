@@ -3,5 +3,6 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories("src")
 
 project(cype_test)
+project(vector_test)
 
 add_subdirectory("src")

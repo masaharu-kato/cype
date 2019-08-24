@@ -2,6 +2,13 @@
 #include "type_utils.h"
 
 namespace cype {
+
+	
+	template <class T>
+	struct _void {
+		_void(std::initializer_list<T>) {}
+	};
+
 	
 	template <class... Types>
 	class Data : public Types... {
@@ -91,7 +98,7 @@ namespace cype {
 		
 		template <class... _Types>
 		void set(const Data<_Types...>& data) {
-			set<_Types>(data)...;
+			_void{(set<_Types>(data), 0)...};
 		}
 
 
@@ -117,28 +124,29 @@ namespace cype {
 			return _StaticVisiter::call(get<Types>()...);
 		}
 		
-		template <class _Visiter, size_t _Index = 0>
+		template <class _Visiter>
 		void visit_each(_Visiter& func) const {
-			func(get<_Index>());
-			if constexpr(_Index + 1 < size) visit_each(func, _Index + 1);
+			_void{(func(get<Types>()), 0)...};
 		}
 		
-		template <class _Mapper, size_t _Index = 0>
-		auto visit_map(_Mapper& func) const {
-			if constexpr(_Index < size){
-				return visit_map<_Mapper, _Index + 1>(func).pushed_front(func(get<_Index>()));
-			}else{
-				return Data();
-			}
+		template <class _Operator>
+		auto operate(_Operator& func) const {
+			return Data(func(get<Types>())...);
 		}
 
-		template <class _StaticMapper, size_t _Index = 0>
-		auto visit_map() const {
-			if constexpr(_Index < size){
-				return visit_map<_StaticMapper, _Index + 1>().pushed_front(_StaticMapper::call(get<_Index>()));
-			}else{
-				return Data();
-			}
+		template <class _Operator, class... _Types>
+		auto operate(_Operator& func, const Data<_Types...>& data) const {
+			return Data(func(get<Types>(), data.get<_Types>())...);
+		}
+
+		template <class _StaticOperator>
+		auto operate() const {
+			return Data(_StaticOperator::call(get<Types>())...);
+		}
+
+		template <class _StaticOperator, class... _Types>
+		auto operate(const Data<_Types...>& data) const {
+			return Data(_StaticOperator::call(get<Types>(), data.get<_Types>())...);
 		}
 
 
