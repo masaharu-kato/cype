@@ -1,12 +1,14 @@
 #include <iostream>
-#include "data.h"
+#include "array.h"
 
 template <size_t I>
 struct Value {
 public:
-	double value;
+	using original_type = double;
 
-	Value(double value)
+	original_type value;
+
+	Value(original_type value)
 		: value(value) {}
 
 	void show() const {
@@ -21,21 +23,16 @@ public:
 
 };
 
-template <size_t... I>
-struct Vector : public cype::Data<Value<I>...> {
+template <size_t N>
+struct Vector : public cype::array_of_indexed<::Value, 1, N> {
 
-	using _BaseType = cype::Data<Value<I>...>;
+	using _base_type = cype::array_of_indexed<::Value, 1, N>;
 
-//	using _BaseType::_BaseType;
+	using _base_type::_base_type;
 
-	Vector(const _BaseType& base)
-		: _BaseType(base) {}
-
-	Vector(Value<I>... vals)
-		: _BaseType(vals...) {}
 
 	void show() const {
-		return visit_each([](auto v){ v.show(); });
+		return for_each([](auto v){ v.show(); });
 	}
 
 	Vector operator +() const {
@@ -66,42 +63,33 @@ private:
 };
 
 
-template <size_t... I>
-struct _ISeqHelper {
-	template <template <size_t...> class _Target> using apply_to = _Target<I...>;
-	template <size_t _I> using push_back = _ISeqHelper<I..., _I>;
-};
-
-
-template <size_t FIRST, size_t LAST>
-struct _ISeq {
-	using Type = typename _ISeq<FIRST, LAST-1>::Type::template push_back<LAST>;
-};
-
-template <size_t FIRST>
-struct _ISeq<FIRST, FIRST> {
-	using Type = _ISeqHelper<FIRST>;
-};
-
-
-template <template <size_t...> class _Target, size_t FIRST, size_t LAST>
-using ApplyISeq = typename _ISeq<FIRST, LAST>::Type::template apply_to<_Target>;
-
-
-template <size_t N>
-using VectorND = ApplyISeq<Vector, 1, N>;
+//template <size_t N>
+//using VectorND = typename cype::tmpl_value_utils<size_t>::template sequence<1, N>::template apply_to<Vector>;
 
 
 
 
 int main(void) {
 
-	VectorND<4> vec1( 12.5, -21.3, 35.7, 42.6);
-	VectorND<4> vec2(  6.4,   8.5,- 2.5, 10.3);
+	Vector<4> vec1( 12.5, -21.3, 35.7, 42.6);
+	Vector<4> vec2(  6.4,   8.5,- 2.5, 10.3);
  
 	auto vec3 = - vec1 + vec2;
 
+	std::cout << "vec3: " << std::endl;
 	vec3.show();
+
+
+	auto arr1 = cype::make_array(10, -21, 32, -44, 58);
+	auto arr2 = arr1.rearrange<2, 0, 4, 1, 3>();
+
+	std::cout << "arr2:" << std::endl;
+	arr2.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
+
+	auto arr3 = arr2.extract<3, 0, 2>();
+
+	std::cout << "arr3:" << std::endl;
+	arr3.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
 
 	return 0;
 }
