@@ -2,10 +2,14 @@
 
 namespace cype {
 
+//	wrapper for primitive (built-in) types
 	template <class Type>
-	class PrimitiveWrapper {
+	class primitive_wrapper {
+	private:
+		Type value;
+
 	public:
-		PrimitiveWrapper(Type value) noexcept
+		primitive_wrapper(Type value) noexcept
 			: value(value) {}
 
 		operator Type() const noexcept {
@@ -15,9 +19,6 @@ namespace cype {
 		operator Type&() noexcept {
 			return value;
 		}
-
-	private:
-		Type value;
 	};
 
 }

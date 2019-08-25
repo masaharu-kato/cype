@@ -1,6 +1,7 @@
 #include <iostream>
 #include "array.h"
 
+//	sample class `Value`
 template <size_t I>
 struct Value {
 public:
@@ -23,6 +24,7 @@ public:
 
 };
 
+//	sample class `Vector`
 template <size_t N>
 struct Vector : public cype::array_of_indexed<::Value, 1, N> {
 

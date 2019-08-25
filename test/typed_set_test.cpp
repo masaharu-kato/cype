@@ -1,30 +1,35 @@
-﻿#include "data.h"
+﻿#include "typed_set.h"
 #include "type_utils.h"
 #include <string>
 #include <iostream>
 #include <type_traits>
 using namespace cype;
 
+//	sample classes `ID`
 struct ID {
 	constexpr static auto TYPENAME = "ID";
 	int id;
 };
 
+//	sample classes `Name`
 struct Name {
 	constexpr static auto TYPENAME = "Name";
 	std::string name;
 };
 
+//	sample classes `Age`
 struct Age {
 	constexpr static auto TYPENAME = "Age";
 	int age;
 };
 
+//	sample classes `Belongs`
 struct Belongs {
 	constexpr static auto TYPENAME = "Belongs";
 	std::string belongs;
 };
 
+//	sample classes `Phone`
 struct Phone {
 	constexpr static auto TYPENAME = "Phone";
 	std::string phone;
@@ -37,7 +42,7 @@ std::ostream& operator <<(std::ostream& os, const Belongs& val) { return os << v
 std::ostream& operator <<(std::ostream& os, const Phone& val) { return os << val.phone; }
 
 
-
+//	sample output class for testing `type_set::visit()`
 template <class OS>
 class OutputFunctions {
 private:
@@ -59,12 +64,12 @@ public:
 
 int main(void) {
 
-	Data data1(ID{152}, Name{"Masaharu Kato"}, Age{21});
-	Data data2(Belongs{"Student"});
-	Data data3(ID{163}, Age{25}, Phone{"090-1234-5678"});
+	typed_set data1(ID{152}, Name{"Masaharu Kato"}, Age{21});
+	typed_set data2(Belongs{"Student"});
+	typed_set data3(ID{163}, Age{25}, Phone{"090-1234-5678"});
 
-	Data person1 = data1.pushed_data_back(data2);
-	Data person2 = data1.overwritten(data3);
+	typed_set person1 = data1.combine_back(data2);
+	typed_set person2 = data1.overwritten(data3);
 
 	person1.visit(OutputFunctions(std::cout));
 	person2.visit(OutputFunctions(std::cout));
