@@ -4,7 +4,7 @@
 cmake_minimum_required (VERSION 3.8)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
-add_executable (data_test "data_test.cpp")
-add_executable (vector_test "vector_test.cpp")
+add_executable (typed_set_test "typed_set_test.cpp")
+add_executable (array_test "array_test.cpp")
 
 # TODO: テストを追加し、必要な場合は、ターゲットをインストールします。

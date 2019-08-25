@@ -1,7 +1,8 @@
 namespace cype {
 
-	template <class Type, size_t _Version>
-	class Binary {
+//	binary type of specified type
+	template <class Type, std::size_t _Version>
+	class binary {
 
 	};
 
