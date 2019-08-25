@@ -2,11 +2,11 @@
 
 namespace cype {
 
-	template <class Type, size_t Index>
+	template <class IType, class Type, IType Index>
 	class Indexed {
 	public:
 		using original_type = Type;
-		constexpr static size_t index = Index;
+		constexpr static IType index = Index;
 
 	private:
 		original_type value;
@@ -15,8 +15,8 @@ namespace cype {
 		Indexed(original_type value) noexcept
 			: value(value) {}
 
-		template <class _Type, size_t _Index>
-		explicit Indexed(Indexed<_Type, _Index> v)
+		template <class _Type, IType _Index>
+		explicit Indexed(Indexed<IType, _Type, _Index> v)
 			: value(v.value) {}
 
 		operator original_type() const noexcept {
@@ -26,10 +26,10 @@ namespace cype {
 	};
 
 
-	template <class Type>
+	template <class IType, class Type>
 	struct indexed_of {
-		template <size_t Index>
-		using type = Indexed<Type, Index>;
+		template <IType Index>
+		using type = Indexed<IType, Type, Index>;
 	};
 
 }
