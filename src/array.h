@@ -1,6 +1,6 @@
 #pragma once
 #include "typed_set.h"
-#include "tmpl_value_utils.h"
+#include "tmplval_list.h"
 #include "indexed.h"
 
 namespace cype {
@@ -12,6 +12,8 @@ namespace cype {
 
 	public:
 		using base_type::typed_set;
+
+		array_indexes_of(const base_type& v) : base_type(v) {}
 
 	//	construct with indexed values
 		array_indexes_of(IndexedType<_Indexes>... vals) noexcept
@@ -26,7 +28,7 @@ namespace cype {
 	//	get value of specified index
 		template <IType _Index>
 		IndexedType<_Index> get() const noexcept {
-			return base_type::get<typename IndexedType<_Index>>();
+			return base_type::template get<IndexedType<_Index>>();
 		}
 		
 	//	extract values of specified indexes
@@ -53,33 +55,33 @@ namespace cype {
 	//	set value of specified index
 		template <IType _Index>
 		void set(const IndexedType<_Index>& val) noexcept {
-			base_type::set<typename IndexedType<_Index>>(val);
+			base_type::template set<IndexedType<_Index>>(val);
 		}
 
 	};
 
 //	preset template arguments `IType` and `IndexedType` of `array_indexes_of` class
 	template <class IType, template <IType> class IndexedType>
-	struct array_type_of {
+	struct array_type_of : _inconstructible {
 		template <IType... _Indexes>
 		using indexes_of = array_indexes_of<IType, IndexedType, _Indexes...>;
 	};
 
 //	array with `IType`(index type), `IndexedType`(value type) and list of index values
 	template <class IType, template <IType> class IndexedType, class IndexList>
-	using array = typename IndexList::template apply_to<typename array_type_of<IType, IndexedType>::indexes_of>;
+	using array = typename IndexList::template apply_to<array_type_of<IType, IndexedType>::template indexes_of>;
 		
 //	array with `IType`(index type), `IndexedType`(value type) and range of index values
 	template <class IType, template <IType> class IndexedType, IType _First, IType _Last, IType _Inv = 1>
-	using array_range_of = typename array<IType, IndexedType, typename tmpl_value_utils<IType>::template sequence<_First, _Last, _Inv>>;
+	using array_range_of = array<IType, IndexedType, sequence<IType, _First, _Last, _Inv>>;
 
 //	array with std::size_t index, `IndexedType`(value type) and range of index values
-	template <template <std::size_t> class IndexedType, std::size_t _First, std::size_t _Last>
-	using array_of_indexed = array_range_of<std::size_t, IndexedType, _First, _Last>;
+	template <template <size_t> class IndexedType, size_t _First, size_t _Last>
+	using array_of_indexed = array_range_of<size_t, IndexedType, _First, _Last>;
 	
 //	array with std::size_t index, specified type and range of index values
-	template <class Type, std::size_t _First, std::size_t _Last>
-	using array_of_type = array_range_of<std::size_t, typename indexed_of<std::size_t, Type>::type, _First, _Last>;
+	template <class Type, size_t _First, size_t _Last>
+	using array_of_type = array_range_of<size_t, indexed_sized_of<size_t, Type>::template type, _First, _Last>;
 	
 
 //	construct array with values

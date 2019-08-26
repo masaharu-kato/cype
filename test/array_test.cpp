@@ -27,33 +27,6 @@ public:
 //	sample class `Vector`
 template <size_t N>
 struct Vector : public cype::array_of_indexed<::Value, 1, N> {
-
-	using _base_type = cype::array_of_indexed<::Value, 1, N>;
-
-	using _base_type::_base_type;
-
-
-	void show() const {
-		return for_each([](auto v){ v.show(); });
-	}
-
-	Vector operator +() const {
-		return operate<_OpPlus>();
-	}
-
-	Vector operator -() const {
-		return operate<_OpMinus>();
-	}
-
-	Vector operator +(const Vector& vec) const {
-		return operate<_OpAdd>(vec);
-	}
-
-	Vector operator -(const Vector& vec) const {
-		return operate<_OpSub>(vec);
-	}
-
-
 private:
 
 	struct _OpPlus  { template <class _T> static _T call(_T v) { return +v; } };
@@ -62,12 +35,36 @@ private:
 	struct _OpAdd { template <class _T> static _T call(_T v1, _T v2) { return v1 + v2; } };
 	struct _OpSub { template <class _T> static _T call(_T v1, _T v2) { return v1 - v2; } };
 
+public:
+
+	using _base_type = cype::array_of_indexed<::Value, 1, N>;
+
+	using _base_type::_base_type;
+
+	Vector(const _base_type& v) : _base_type(v) {}
+
+
+	void show() const {
+		return this->for_each([](auto v){ v.show(); });
+	}
+
+	Vector operator +() const {
+		return this->template operate<_OpPlus>();
+	}
+
+	Vector operator -() const {
+		return this->template operate<_OpMinus>();
+	}
+
+	Vector operator +(const Vector& vec) const {
+		return this->template operate<_OpAdd>(vec);
+	}
+
+	Vector operator -(const Vector& vec) const {
+		return this->template operate<_OpSub>(vec);
+	}
+
 };
-
-
-//template <size_t N>
-//using VectorND = typename cype::tmpl_value_utils<size_t>::template sequence<1, N>::template apply_to<Vector>;
-
 
 
 

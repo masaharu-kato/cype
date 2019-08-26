@@ -1,16 +1,9 @@
 #pragma once
 #include "type_utils.h"
+#include "_utility.h"
 
 namespace cype {
 
-	
-//	structure for dismiss return values
-	template <class T>
-	struct _void {
-		_void(std::initializer_list<T>) {}
-	};
-
-	
 //	typed set
 	template <class... Types>
 	class typed_set : public Types... {
@@ -47,7 +40,7 @@ namespace cype {
 	//	Get value of specified index
 		template <size_t _Index>
 		auto get() const {
-			return get<type_list::get<_Index>>();
+			return get<type_list::template get<_Index>>();
 		}
 
 
@@ -137,7 +130,7 @@ namespace cype {
 
 	//	call function `func` receives one value with each own values
 		template <class _Function>
-		void for_each(_Function& func) const {
+		void for_each(_Function func) const {
 			_void{(func(get<Types>()), 0)...};
 		}
 
@@ -156,7 +149,7 @@ namespace cype {
 	//	operate with function `func` (receives two values) on each pair of own and data's values
 		template <class _Operator, class... _Types>
 		auto operate(_Operator& func, const typed_set<_Types...>& data) const {
-			return typed_set(func(get<Types>(), data.get<_Types>())...);
+			return typed_set(func(get<Types>(), data.template get<_Types>())...);
 		}
 		
 	//	operate (map) with function `_StaticOperator::call` (receives one value) on each own values
@@ -168,7 +161,7 @@ namespace cype {
 	//	operate with function `_StaticOperator::call` (receives two values) on each pair of own and data's values
 		template <class _StaticOperator, class... _Types>
 		auto operate(const typed_set<_Types...>& data) const {
-			return typed_set(_StaticOperator::call(get<Types>(), data.get<_Types>())...);
+			return typed_set(_StaticOperator::call(get<Types>(), data.template get<_Types>())...);
 		}
 
 
@@ -201,5 +194,12 @@ namespace cype {
 		}
 
 	};
+
+
+	template <class... Types>
+	auto make_typed_set(const Types&... vals) {
+		return typed_set<Types...>(vals...);
+	}
+
 
 }
