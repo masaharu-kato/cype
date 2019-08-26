@@ -65,11 +65,6 @@ private:
 };
 
 
-//template <size_t N>
-//using VectorND = typename cype::tmpl_value_utils<size_t>::template sequence<1, N>::template apply_to<Vector>;
-
-
-
 
 int main(void) {
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "tmpl_value_utils.h"
+#include "tmplval_list.h"
 
 namespace cype {
 
@@ -8,7 +8,7 @@ namespace cype {
 	class indexed {
 	public:
 		using original_type = Type;
-		using indexes = typename tmpl_value_utils<IType>::template list<_DimIndexes...>;
+		using indexes = tmplval_list<IType, _DimIndexes...>;
 
 		constexpr static IType index = indexes::template get<0>;
 
@@ -22,8 +22,8 @@ namespace cype {
 		indexed(original_type value) noexcept
 			: value(value) {}
 
-		template <class _IType, class _Type, _IType... _DimIndexes>
-		explicit indexed(const indexed<_IType, _Type, _DimIndexes...>& v)
+		template <class _IType, class _Type, _IType... __DimIndexes>
+		explicit indexed(const indexed<_IType, _Type, __DimIndexes...>& v)
 			: value(v.value) {}
 
 		operator original_type() const noexcept {
@@ -34,7 +34,7 @@ namespace cype {
 
 //	preset template argument `IType`(index type), `Type`(original type) of `indexed` class
 	template <class IType, class Type>
-	struct indexed_of {
+	struct indexed_of : _inconstructible {
 		template <IType... _DimIndexes>
 		using type = indexed<IType, Type, _DimIndexes...>;
 	};
@@ -45,7 +45,7 @@ namespace cype {
 
 //	convert multi-dimensional indexes to single index value
 	template <class IType, class Type, IType... _Sizes>
-	struct indexed_sized_of {
+	struct indexed_sized_of : _inconstructible {
 	//	TODO: definition
 		using type = void;
 	};
