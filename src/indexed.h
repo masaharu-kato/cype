@@ -46,8 +46,9 @@ namespace cype {
 //	convert multi-dimensional indexes to single index value
 	template <class IType, class Type, IType... _Sizes>
 	struct indexed_sized_of : _inconstructible {
-	//	TODO: definition
-		using type = void;
+	//	TODO: correct definition
+		template <IType _DimIndex>
+		using type = indexed<IType, Type, _DimIndex>;
 	};
 
 

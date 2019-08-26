@@ -13,6 +13,8 @@ namespace cype {
 	public:
 		using base_type::typed_set;
 
+		array_indexes_of(const base_type& v) : base_type(v) {}
+
 	//	construct with indexed values
 		array_indexes_of(IndexedType<_Indexes>... vals) noexcept
 			: base_type(vals...) {}
@@ -67,7 +69,7 @@ namespace cype {
 
 //	array with `IType`(index type), `IndexedType`(value type) and list of index values
 	template <class IType, template <IType> class IndexedType, class IndexList>
-	using array = typename IndexList::template apply_to<typename array_type_of<IType, IndexedType>::indexes_of>;
+	using array = typename IndexList::template apply_to<array_type_of<IType, IndexedType>::template indexes_of>;
 		
 //	array with `IType`(index type), `IndexedType`(value type) and range of index values
 	template <class IType, template <IType> class IndexedType, IType _First, IType _Last, IType _Inv = 1>
@@ -79,7 +81,7 @@ namespace cype {
 	
 //	array with std::size_t index, specified type and range of index values
 	template <class Type, size_t _First, size_t _Last>
-	using array_of_type = array_range_of<size_t, typename indexed_of<size_t, Type>::type, _First, _Last>;
+	using array_of_type = array_range_of<size_t, indexed_sized_of<size_t, Type>::template type, _First, _Last>;
 	
 
 //	construct array with values
