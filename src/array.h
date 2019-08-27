@@ -12,7 +12,7 @@ namespace cype {
 
 	public:
 		using base_type::typed_set;
-
+		
 		array_indexes_of(const base_type& v) : base_type(v) {}
 
 	//	construct with indexed values

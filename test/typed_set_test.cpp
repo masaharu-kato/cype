@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <type_traits>
+#include <optional>
 using namespace cype;
 
 //	sample classes `ID`
@@ -64,13 +65,17 @@ public:
 
 int main(void) {
 
-	auto data1 = make_typed_set(ID{152}, Name{"Masaharu Kato"}, Age{21});
-	auto data2 = make_typed_set(Belongs{"Student"});
-	auto data3 = make_typed_set(ID{163}, Age{25}, Phone{"090-1234-5678"});
+	auto data1 = make_set(ID{152}, Name{"Masaharu Kato"}, Age{21});
+	auto data2 = make_set(Belongs{"Student"});
+	auto data3 = make_set(ID{163}, Age{25}, Phone{"090-1234-5678"});
+
+	auto data1_opt = data1.construct_each<std::optional>();
 
 	static_assert(std::is_same_v<decltype(data1), typed_set<ID, Name, Age>> , "type of data1 is incorrect.");
 	static_assert(std::is_same_v<decltype(data2), typed_set<Belongs>>       , "type of data2 is incorrect.");
 	static_assert(std::is_same_v<decltype(data3), typed_set<ID, Age, Phone>>, "type of data3 is incorrect.");
+
+	static_assert(std::is_same_v<decltype(data1_opt), typed_set<std::optional<ID>, std::optional<Name>, std::optional<Age>>>, "type of data1_opt is incorrect.");
 
 	typed_set person1 = data1.combine_back(data2);
 	typed_set person2 = data1.overwritten(data3);

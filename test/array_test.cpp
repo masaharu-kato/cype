@@ -12,6 +12,15 @@ public:
 	Value(original_type value)
 		: value(value) {}
 
+	operator original_type() const {
+		return value;
+	}
+
+	Value(const Value&) = default;
+
+	template <size_t _I>
+	Value(const Value<_I>&) = delete;
+
 	void show() const {
 		std::cout << "[" << I << "] " << value << std::endl;
 	};
@@ -21,6 +30,8 @@ public:
 
 	Value operator +(Value v) const { return value + v.value; }
 	Value operator -(Value v) const { return value - v.value; }
+
+
 
 };
 
@@ -32,8 +43,8 @@ private:
 	struct _OpPlus  { template <class _T> static _T call(_T v) { return +v; } };
 	struct _OpMinus { template <class _T> static _T call(_T v) { return -v; } };
 
-	struct _OpAdd { template <class _T> static _T call(_T v1, _T v2) { return v1 + v2; } };
-	struct _OpSub { template <class _T> static _T call(_T v1, _T v2) { return v1 - v2; } };
+	struct _OpAdd { template <class _T1, class _T2> static auto call(_T1 v1, _T2 v2) { return v1 + v2; } };
+	struct _OpSub { template <class _T1, class _T2> static auto call(_T1 v1, _T2 v2) { return v1 - v2; } };
 
 public:
 
@@ -65,7 +76,7 @@ public:
 	}
 
 	auto sum() const {
-		return this->reduce<_OpAdd>(double(0));
+		return this->template reduce<_OpAdd>(double(0));
 	}
 
 };
@@ -82,7 +93,8 @@ int main(void) {
 	std::cout << "vec3: " << std::endl;
 	vec3.show();
 
-	std::cout << "sum of vec3: " << vec3.sum() << std::endl;
+	auto vec3_sum = vec3.sum();
+	std::cout << "sum of vec3: " << vec3_sum << std::endl;
 
 
 	auto arr1 = cype::make_array(10, -21, 32, -44, 58);

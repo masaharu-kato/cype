@@ -4,6 +4,7 @@
 
 namespace cype {
 
+
 //	typed set
 	template <class... Types>
 	class typed_set : public Types... {
@@ -40,7 +41,7 @@ namespace cype {
 	//	Get value of specified index
 		template <size_t _Index>
 		auto get() const {
-			return get<type_list::template get<_Index>>();
+			return get<typename type_list::template get<_Index>>();
 		}
 
 
@@ -156,7 +157,7 @@ namespace cype {
 		template <size_t _Index, class _Reducer, class _ValType>
 		auto reduce_from(const _Reducer& reducer, const _ValType& val) const {
 			if constexpr(_Index < size) {
-				return reduce_from<_Index + 1>(reducer, reducer(val, get<_Index>()));
+				return reduce_from<_index_add<_Index, 1>>(reducer, reducer(val, get<_Index>()));
 			}else{
 				return val;
 			}
@@ -185,7 +186,7 @@ namespace cype {
 		template <size_t _Index, class _StaticReducer, class _ValType>
 		auto reduce_from(const _ValType& val) const {
 			if constexpr(_Index < size) {
-				return reduce_from<_Index + 1>(_StaticReducer::call(val, get<_Index>()));
+				return reduce_from<_index_add<_Index, 1>, _StaticReducer>(_StaticReducer::call(val, get<_Index>()));
 			}else{
 				return val;
 			}
@@ -194,7 +195,7 @@ namespace cype {
 	//	reduce with function `_StaticReducer::call`, which receives two values
 		template <class _StaticReducer, class _ValType>
 		auto reduce(const _ValType& val = 0) const {
-			return reduce_from<0>(val);
+			return reduce_from<0, _StaticReducer>(val);
 		}
 
 
@@ -235,14 +236,14 @@ namespace cype {
 	//	Generate instances of specified type which receives one type as template argument
 		template <template <class> class _Class>
 		typed_set<_Class<Types>*...> new_each() const {
-			return {new _Class<Types>(get<Types>())...}+
+			return {new _Class<Types>(get<Types>())...};
 		}
 
 	};
 
 
 	template <class... Types>
-	auto make_typed_set(const Types&... vals) {
+	auto make_set(const Types&... vals) {
 		return typed_set<Types...>(vals...);
 	}
 
