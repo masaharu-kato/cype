@@ -64,6 +64,10 @@ public:
 		return this->template operate<_OpSub>(vec);
 	}
 
+	auto sum() const {
+		return this->reduce<_OpAdd>(double(0));
+	}
+
 };
 
 
@@ -77,6 +81,8 @@ int main(void) {
 
 	std::cout << "vec3: " << std::endl;
 	vec3.show();
+
+	std::cout << "sum of vec3: " << vec3.sum() << std::endl;
 
 
 	auto arr1 = cype::make_array(10, -21, 32, -44, 58);
