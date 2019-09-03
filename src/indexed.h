@@ -1,13 +1,14 @@
 #pragma once
 #include "tmplval_list.h"
+#include "_utility.h"
 
 namespace cype {
 
 //	indexed value with `IType`(index type), `Type`(original type), indexes of each dimension
-	template <class IType, class Type, IType... _DimIndexes>
-	class indexed {
+	template <class IType, class ValType, IType... _DimIndexes>
+	class _indexed_prototype {
 	public:
-		using original_type = Type;
+		using original_type = ValType;
 		using indexes = tmplval_list<IType, _DimIndexes...>;
 
 		constexpr static IType index = indexes::template get<0>;
@@ -19,11 +20,11 @@ namespace cype {
 		original_type value;
 
 	public:
-		indexed(original_type value) noexcept
+		_indexed_prototype(original_type value) noexcept
 			: value(value) {}
 
 		template <class _IType, class _Type, _IType... __DimIndexes>
-		explicit indexed(const indexed<_IType, _Type, __DimIndexes...>& v)
+		explicit _indexed_prototype(const _indexed_prototype<_IType, _Type, __DimIndexes...>& v)
 			: value(v.value) {}
 
 		operator original_type() const noexcept {
@@ -34,23 +35,34 @@ namespace cype {
 
 //	preset template argument `IType`(index type), `Type`(original type) of `indexed` class
 	template <class IType, class Type>
-	struct indexed_of : _inconstructible {
+	struct _indexed_of : _inconstructible {
 		template <IType... _DimIndexes>
-		using type = indexed<IType, Type, _DimIndexes...>;
+		using type = _indexed_prototype<IType, Type, _DimIndexes...>;
 	};
 
 //	`indexed` class with index list
 	template <class IType, class Type, class _IndexList>
-	using indexed_listed = typename _IndexList::template apply_to<typename indexed_of<IType, Type>::type>;
+	using _indexed_listed = typename _IndexList::template apply_to<typename _indexed_of<IType, Type>::type>;
 
 //	convert multi-dimensional indexes to single index value
 	template <class IType, class Type, IType... _Sizes>
-	struct indexed_sized_of : _inconstructible {
+	struct _indexed_sized_of : _inconstructible {
 	//	TODO: correct definition
 		template <IType _DimIndex>
-		using type = indexed<IType, Type, _DimIndex>;
+		using type = _indexed_prototype<IType, Type, _DimIndex>;
 	};
 
 
+	template <class ValType, size_t _Index>
+	using indexed = _indexed_prototype<size_t, ValType, _Index>;
+	
+	template <class ValType, size_t... _Indexes>
+	using multi_indexed = _indexed_prototype<size_t, ValType, _Indexes...>;
+
+
+	template <size_t _Index, class ValType>
+	auto make_indexed(const ValType& value) {
+		return indexed<ValType, _Index>(value);
+	}
 
 }

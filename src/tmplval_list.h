@@ -151,6 +151,9 @@ namespace cype {
 	template <class ValType, ValType _First, ValType _Last, ValType _Inv = 1>
 	using sequence = typename _sequence_helper<ValType, _First, _Last, _Inv>::type;
 
+	template <size_t _First, size_t _Last, size_t _Inv = 1>
+	using index_sequence = sequence<size_t, _First, _Last, _Inv>;
+
 
 
 }
