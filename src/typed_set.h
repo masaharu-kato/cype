@@ -9,6 +9,7 @@ namespace cype {
 	template <class... Types>
 	class typed_set : public Types... {
 	public:
+		using this_type = typed_set<Types...>;
 		using type_list = type_utils::list<Types...>;
 		constexpr static size_t size = sizeof...(Types);
 
@@ -59,6 +60,20 @@ namespace cype {
 		//auto get_ref() const {
 		//	return get_ref<type_list::get<_Index>>();
 		//}
+
+
+	//	Get offset of specified type
+		template <class _Type>
+		size_t offset_of() const {
+			static size_t offset = (size_t)-1;
+
+			if(offset == (size_t)-1) {	
+				offset = (char*)&(const _Type&)*this - (char*)this;
+			}
+
+			return offset;
+		}
+
 
 	//	push values of new types to front
 		template <class... _Types>

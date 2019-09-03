@@ -43,6 +43,23 @@ int main(void) {
 
 	static_assert(std::is_same_v<decltype(data1_opt), typed_set<std::optional<ID>, std::optional<Name>, std::optional<Age>>>, "type of data1_opt is incorrect.");
 
+	
+
+	std::cout << "data1: offset of ID   : " << data1.offset_of<ID   >() << std::endl;
+	std::cout << "data1: offset of Name : " << data1.offset_of<Name >() << std::endl;
+	std::cout << "data1: offset of Age  : " << data1.offset_of<Age  >() << std::endl;
+	std::cout << "data3: offset of ID   : " << data3.offset_of<ID   >() << std::endl;
+	std::cout << "data3: offset of Age  : " << data3.offset_of<Age  >() << std::endl;
+	std::cout << "data3: offset of Phone: " << data3.offset_of<Phone>() << std::endl;
+
+	std::cout << "data1_n:" << std::endl;
+	decltype(data1) data1_n(ID{624}, Age{23}, Name{"Hogefuga"});
+
+	data1_n.for_each([&data1_n](auto value){
+		std::cout << decltype(value)::TYPENAME << ": " << value << " (offset: " << data1_n.offset_of<decltype(value)>() << ")" << std::endl;
+	});
+
+
 	typed_set person1 = data1.combine_back(data2);
 	typed_set person2 = data1.overwritten(data3);
 
@@ -54,8 +71,6 @@ int main(void) {
 	person1.for_each([](auto value){
 		std::cout << value << std::endl;	
 	});
-
-
 
 	auto map1 = make_map(make_typed<ID>(25), make_typed<Age>(36), make_typed<Phone>(13));
 
