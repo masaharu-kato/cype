@@ -1,45 +1,12 @@
 ﻿#include "typed_set.h"
+#include "typed_map.h"
 #include "type_utils.h"
+#include "test_structs.h"
 #include <string>
 #include <iostream>
 #include <type_traits>
+#include <optional>
 using namespace cype;
-
-//	sample classes `ID`
-struct ID {
-	constexpr static auto TYPENAME = "ID";
-	int id;
-};
-
-//	sample classes `Name`
-struct Name {
-	constexpr static auto TYPENAME = "Name";
-	std::string name;
-};
-
-//	sample classes `Age`
-struct Age {
-	constexpr static auto TYPENAME = "Age";
-	int age;
-};
-
-//	sample classes `Belongs`
-struct Belongs {
-	constexpr static auto TYPENAME = "Belongs";
-	std::string belongs;
-};
-
-//	sample classes `Phone`
-struct Phone {
-	constexpr static auto TYPENAME = "Phone";
-	std::string phone;
-};
-
-std::ostream& operator <<(std::ostream& os, const ID& val) { return os << val.id; }
-std::ostream& operator <<(std::ostream& os, const Name& val) { return os << val.name; }
-std::ostream& operator <<(std::ostream& os, const Age& val) { return os << val.age; }
-std::ostream& operator <<(std::ostream& os, const Belongs& val) { return os << val.belongs; }
-std::ostream& operator <<(std::ostream& os, const Phone& val) { return os << val.phone; }
 
 
 //	sample output class for testing `type_set::visit()`
@@ -64,13 +31,34 @@ public:
 
 int main(void) {
 
-	auto data1 = make_typed_set(ID{152}, Name{"Masaharu Kato"}, Age{21});
-	auto data2 = make_typed_set(Belongs{"Student"});
-	auto data3 = make_typed_set(ID{163}, Age{25}, Phone{"090-1234-5678"});
+	auto data1 = make_set(ID{152}, Name{"Masaharu Kato"}, Age{21});
+	auto data2 = make_set(Belongs{"Student"});
+	auto data3 = make_set(ID{163}, Age{25}, Phone{"090-1234-5678"});
+
+	auto data1_opt = data1.construct_each<std::optional>();
 
 	static_assert(std::is_same_v<decltype(data1), typed_set<ID, Name, Age>> , "type of data1 is incorrect.");
 	static_assert(std::is_same_v<decltype(data2), typed_set<Belongs>>       , "type of data2 is incorrect.");
 	static_assert(std::is_same_v<decltype(data3), typed_set<ID, Age, Phone>>, "type of data3 is incorrect.");
+
+	static_assert(std::is_same_v<decltype(data1_opt), typed_set<std::optional<ID>, std::optional<Name>, std::optional<Age>>>, "type of data1_opt is incorrect.");
+
+	
+
+	std::cout << "data1: offset of ID   : " << data1.offset_of<ID   >() << std::endl;
+	std::cout << "data1: offset of Name : " << data1.offset_of<Name >() << std::endl;
+	std::cout << "data1: offset of Age  : " << data1.offset_of<Age  >() << std::endl;
+	std::cout << "data3: offset of ID   : " << data3.offset_of<ID   >() << std::endl;
+	std::cout << "data3: offset of Age  : " << data3.offset_of<Age  >() << std::endl;
+	std::cout << "data3: offset of Phone: " << data3.offset_of<Phone>() << std::endl;
+
+	std::cout << "data1_n:" << std::endl;
+	decltype(data1) data1_n(ID{624}, Age{23}, Name{"Hogefuga"});
+
+	data1_n.for_each([&data1_n](auto value){
+		std::cout << decltype(value)::TYPENAME << ": " << value << " (offset: " << data1_n.offset_of<decltype(value)>() << ")" << std::endl;
+	});
+
 
 	typed_set person1 = data1.combine_back(data2);
 	typed_set person2 = data1.overwritten(data3);
@@ -82,6 +70,32 @@ int main(void) {
 
 	person1.for_each([](auto value){
 		std::cout << value << std::endl;	
+	});
+
+	auto map1 = make_map(make_typed<ID>(25), make_typed<Age>(36), make_typed<Phone>(13));
+
+	static_assert(std::is_same_v<decltype(map1), typed_map<int, ID, Age, Phone>> , "type of map1 is incorrect.");
+	
+	std::cout << "map1: " << std::endl;
+	map1.for_each([](auto value){
+		std::cout << decltype(value)::type::TYPENAME << ": " << value.get() << std::endl;	
+	});
+
+	typed_map<size_t, ID, Name, Belongs, Phone> map2((size_t)0);
+	map2.set<Name>(123);
+	map2.set<Phone>(456);
+
+	std::cout << "map2: " << std::endl;
+	map2.for_each([](auto value){
+		std::cout << decltype(value)::type::TYPENAME << ": " << value.get() << std::endl;	
+	});
+	
+	auto map3 = make_map(make_typed<Age>(32), make_typed<ID>(-105), make_typed<Belongs>(3));
+	map3.fill(12345);
+
+	std::cout << "map3: " << std::endl;
+	map3.for_each([](auto value){
+		std::cout << decltype(value)::type::TYPENAME << ": " << value.get() << std::endl;	
 	});
 
 	return 0;

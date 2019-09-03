@@ -4,10 +4,12 @@
 
 namespace cype {
 
+
 //	typed set
 	template <class... Types>
 	class typed_set : public Types... {
 	public:
+		using this_type = typed_set<Types...>;
 		using type_list = type_utils::list<Types...>;
 		constexpr static size_t size = sizeof...(Types);
 
@@ -40,7 +42,7 @@ namespace cype {
 	//	Get value of specified index
 		template <size_t _Index>
 		auto get() const {
-			return get<type_list::template get<_Index>>();
+			return get<typename type_list::template get<_Index>>();
 		}
 
 
@@ -58,6 +60,20 @@ namespace cype {
 		//auto get_ref() const {
 		//	return get_ref<type_list::get<_Index>>();
 		//}
+
+
+	//	Get offset of specified type
+		template <class _Type>
+		size_t offset_of() const {
+			static size_t offset = (size_t)-1;
+
+			if(offset == (size_t)-1) {	
+				offset = (char*)&(const _Type&)*this - (char*)this;
+			}
+
+			return offset;
+		}
+
 
 	//	push values of new types to front
 		template <class... _Types>
@@ -128,40 +144,73 @@ namespace cype {
 			return _StaticFunction::call(get<Types>()...);
 		}
 
-	//	call function `func` receives one value with each own values
+	//	call function `func` which receives one value with each own values
 		template <class _Function>
-		void for_each(_Function func) const {
+		void for_each(const _Function& func) const {
 			_void{(func(get<Types>()), 0)...};
 		}
 
-	//	call function `_StaticFunction::call` receives one value with each own values
+	//	call function `_StaticFunction::call` which receives one value with each own values
 		template <class _StaticFunction>
 		void for_each() const {
 			_void{(_StaticFunction::call(get<Types>()), 0)...};
 		}
 		
-	//	operate (map) with function `func` (receives one value) on each own values
+	//	operate (map) with function `func`, which receives one value, on each own values
 		template <class _Operator>
-		auto operate(_Operator& func) const {
+		auto operate(const _Operator& func) const {
 			return typed_set(func(get<Types>())...);
 		}
 		
-	//	operate with function `func` (receives two values) on each pair of own and data's values
+	//	operate with function `func`, which receives two values, on each pair of own and data's values
 		template <class _Operator, class... _Types>
-		auto operate(_Operator& func, const typed_set<_Types...>& data) const {
+		auto operate(const _Operator& func, const typed_set<_Types...>& data) const {
 			return typed_set(func(get<Types>(), data.template get<_Types>())...);
 		}
+
+	//	reduce with function `func`, which receives two values, from specified index (to last index)
+		template <size_t _Index, class _Reducer, class _ValType>
+		auto reduce_from(const _Reducer& reducer, const _ValType& val) const {
+			if constexpr(_Index < size) {
+				return reduce_from<_index_add<_Index, 1>>(reducer, reducer(val, get<_Index>()));
+			}else{
+				return val;
+			}
+		}
 		
-	//	operate (map) with function `_StaticOperator::call` (receives one value) on each own values
+	//	reduce with function `func`, which receives two values
+		template <class _Reducer, class _ValType>
+		auto reduce(const _Reducer& reducer, const _ValType& val = 0) const {
+			return reduce_from<0>(reducer, val);
+		}
+
+		
+	//	operate (map) with function `_StaticOperator::call`, which receives one value, on each own values
 		template <class _StaticOperator>
 		auto operate() const {
 			return typed_set(_StaticOperator::call(get<Types>())...);
 		}
 		
-	//	operate with function `_StaticOperator::call` (receives two values) on each pair of own and data's values
+	//	operate with function `_StaticOperator::call`, which receives two values, on each pair of own and data's values
 		template <class _StaticOperator, class... _Types>
 		auto operate(const typed_set<_Types...>& data) const {
 			return typed_set(_StaticOperator::call(get<Types>(), data.template get<_Types>())...);
+		}
+
+	//	reduce with function `_StaticReducer::call`, which receives two values, from specified index (to last index)
+		template <size_t _Index, class _StaticReducer, class _ValType>
+		auto reduce_from(const _ValType& val) const {
+			if constexpr(_Index < size) {
+				return reduce_from<_index_add<_Index, 1>, _StaticReducer>(_StaticReducer::call(val, get<_Index>()));
+			}else{
+				return val;
+			}
+		}
+		
+	//	reduce with function `_StaticReducer::call`, which receives two values
+		template <class _StaticReducer, class _ValType>
+		auto reduce(const _ValType& val = 0) const {
+			return reduce_from<0, _StaticReducer>(val);
 		}
 
 
@@ -186,6 +235,12 @@ namespace cype {
 		_Type construct() const {
 			return _Type((Types)(*this)...);	
 		}
+
+	//	Create instances of specified type which receives one type as template argument
+		template <template <class> class _Class>
+		typed_set<_Class<Types>...> construct_each() const {
+			return {_Class<Types>(get<Types>())...};
+		}
 		
 	//	Generate specified type (apply own values to constructer arguments)
 		template <class _Type>
@@ -193,11 +248,17 @@ namespace cype {
 			return new _Type((Types)(*this)...);
 		}
 
+	//	Generate instances of specified type which receives one type as template argument
+		template <template <class> class _Class>
+		typed_set<_Class<Types>*...> new_each() const {
+			return {new _Class<Types>(get<Types>())...};
+		}
+
 	};
 
 
 	template <class... Types>
-	auto make_typed_set(const Types&... vals) {
+	auto make_set(const Types&... vals) {
 		return typed_set<Types...>(vals...);
 	}
 
