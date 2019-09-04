@@ -128,24 +128,24 @@ namespace cype {
 
 
 	private:
-	//	helpder function for `insert_sorted`
-		template <ValType __Value>
-		static constexpr auto _insert_sorted() {
-			if constexpr(__Value < First) {
-				return type_as_value<push_front<__Value>>();
-			}else{
-				return type_as_value<typename rests_list::template insert_sorted<__Value>::template push_front<First>>();
-			}
-		}
+	////	helpder function for `insert_sorted`
+	//	template <ValType __Value>
+	//	static constexpr auto _insert_sorted() {
+	//		if constexpr(__Value < First) {
+	//			return type_as_value<push_front<__Value>>();
+	//		}else{
+	//			return type_as_value<typename rests_list::template insert_sorted<__Value>::template push_front<First>>();
+	//		}
+	//	}
 
 	//	helper function for `merge_sorted_args`
-		template <class ValList>
+		template <class ValList, class SortFunction>
 		static constexpr auto _merge_of_sorted() {
 			if constexpr(ValList::size) {
-				if constexpr(ValList::template get<0> < First) {
-					return type_as_value<typename push_front<ValList::template get<0>>::template merge_of_sorted<typename ValList::rests_list>>();
+				if constexpr(SortFunction::template call<ValList::template get<0>, First>()) {
+					return type_as_value<typename push_front<ValList::template get<0>>::template merge_of_sorted<typename ValList::rests_list, SortFunction>>();
 				}else{
-					return type_as_value<typename rests_list::template merge_of_sorted<ValList>::template push_front<First>>();
+					return type_as_value<typename rests_list::template merge_of_sorted<ValList, SortFunction>::template push_front<First>>();
 				}
 			}else{
 				return type_as_value<tmplval_list>();
@@ -153,11 +153,12 @@ namespace cype {
 		}
 
 	//	helpr function for `sorted`
+		template <class SortFunction>
 		static constexpr auto _sorted() {
 			if constexpr(size >= 2) {
 				using left_part = range_of<0, size / 2 - 1>;
 				using right_part = range_of<size / 2, size - 1>;
-				return type_as_value<typename left_part::sorted::template merge_of_sorted<typename right_part::sorted>>();
+				return type_as_value<typename left_part::template sorted<SortFunction>::template merge_of_sorted<typename right_part::template sorted<SortFunction>, SortFunction>>();
 			}else{
 				return type_as_value<tmplval_list>();
 			}
@@ -165,16 +166,34 @@ namespace cype {
 
 
 	public:
-	//	insert new value (with the state that own values are sorted)
-		template <ValType __Value>
-		using insert_sorted = typename decltype(_insert_sorted<__Value>())::type;
+	////	insert new value (with the state that own values are sorted)
+	//	template <ValType __Value>
+	//	using insert_sorted = typename decltype(_insert_sorted<__Value>())::type;
 
-	//	merge with sorted value
-		template <class ValList>
-		using merge_of_sorted = typename decltype(_merge_of_sorted<ValList>())::type;
+	//	merge with sorted with sort function
+		template <class ValList, class SortFunction>
+		using merge_of_sorted = typename decltype(_merge_of_sorted<ValList, SortFunction>())::type;
 		
 	//	sort with sort function
-		using sorted = typename decltype(_sorted())::type;
+		template <class SortFunction>
+		using sorted = typename decltype(_sorted<SortFunction>())::type;
+
+
+	//	sort function for value sorting
+		struct value_sort_function : _inconstructible {
+			template <ValType Val1, ValType Val2>
+			static constexpr bool call() {
+				return Val1 < Val2;
+			}
+		};
+
+
+	//	merge with sorted by values
+		template <class ValList>
+		using merge_of_value_sorted = merge_of_sorted<ValList, value_sort_function>;
+
+	//	sort values
+		using value_sorted = sorted<value_sort_function>;
 
 	};
 
@@ -219,12 +238,20 @@ namespace cype {
 		template <ValType __Value>
 		using insert_sorted = sameval_type<__Value>;
 
-	//	merge with sorted value
-		template <class ValList>
+	//	merge with sorted by sort function
+		template <class ValList, class SortFunction>
 		using merge_of_sorted = ValList;
 		
-	//	sort with sort function
+	//	sort by sort function
+		template <class SortFunction>
 		using sorted = tmplval_list;
+
+	//	merge with sorted by values
+		template <class ValList>
+		using merge_of_value_sorted = ValList;
+		
+	//	sort by values
+		using value_sorted = tmplval_list;
 
 	};
 
