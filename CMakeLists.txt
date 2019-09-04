@@ -2,7 +2,8 @@
 set(CMAKE_CXX_STANDARD 17)
 include_directories("src")
 
-project(data_test)
-project(vector_test)
+project(array_test)
+project(typed_set_test)
+project(typed_array_test)
 
 add_subdirectory("test")

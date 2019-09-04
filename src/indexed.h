@@ -1,3 +1,4 @@
+
 #pragma once
 #include "tmplval_list.h"
 #include "_utility.h"
@@ -17,18 +18,22 @@ namespace cype {
 		constexpr static IType index_of = indexes::template get<__Index>;
 
 	private:
-		original_type value;
+		original_type _value;
 
 	public:
-		_indexed_prototype(original_type value) noexcept
-			: value(value) {}
+		_indexed_prototype(original_type _value) noexcept
+			: _value(_value) {}
 
 		template <class _IType, class _Type, _IType... __DimIndexes>
 		explicit _indexed_prototype(const _indexed_prototype<_IType, _Type, __DimIndexes...>& v)
-			: value(v.value) {}
+			: _value(v.value()) {}
 
 		operator original_type() const noexcept {
-			return value;
+			return _value;
+		}
+
+		original_type value() const noexcept {
+			return _value;
 		}
 
 	};

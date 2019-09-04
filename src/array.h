@@ -26,7 +26,7 @@ namespace cype {
 	//	construct from different typed array
 		template <template <IType> class _IndexedType>
 		array_index_args_of(const array_index_args_of<IType, _IndexedType, _Indexes...>& arr)
-			: base_type(arr.template get<_Indexes>()...) {}
+			: base_type(IndexedType<_Indexes>(arr.template get<_Indexes>())...) {}
 
 		using base_type::get;
 
@@ -100,12 +100,12 @@ namespace cype {
 
 
 //	array with `IType`(index type), `IndexedType`(index-templated value type) and list of index values
-	template <class IType, template <IType> class IndexedType, class IndexList>
-	using array_indexes_of = typename IndexList::template apply_to<_array_indexed_type_of<IType, IndexedType>::template indexes_of>;
+	template <class IndexList, template <typename IndexList::tmplval_type> class IndexedType>
+	using array_indexes_of = typename IndexList::template apply_to<_array_indexed_type_of<typename IndexList::tmplval_type, IndexedType>::template indexes_of>;
 		
 //	array with `IType`(index type), `IndexedType`(index-templated value type) and range of index values
 	template <class IType, template <IType> class IndexedType, IType _First, IType _Last, IType _Inv = 1>
-	using array_range_of = array_indexes_of<IType, IndexedType, sequence<IType, _First, _Last, _Inv>>;
+	using array_range_of = array_indexes_of<sequence<IType, _First, _Last, _Inv>, IndexedType>;
 
 //	array with size_t index, `IndexedType`(index-templated value type) and number of index values
 	template <template <size_t> class IndexedType, size_t _Size>
@@ -113,12 +113,12 @@ namespace cype {
 	
 
 //	array with `IType`(index type), `ValType`(value type) and list of index values
-	template <class IType, class ValType, class IndexList>
-	using array_type_indexes_of = typename IndexList::template apply_to<_array_type_indexed_type_of<IType, ValType>::template indexes_of>;
+	template <class IndexList, class ValType>
+	using array_type_indexes_of = typename IndexList::template apply_to<_array_type_indexed_type_of<typename IndexList::tmplval_type, ValType>::template indexes_of>;
 		
 //	array with `IType`(index type), `ValType`(value type) and range of index values
 	template <class IType, class ValType, IType _First, IType _Last, IType _Inv = 1>
-	using array_type_range_of = array_type_indexes_of<IType, ValType, sequence<IType, _First, _Last, _Inv>>;
+	using array_type_range_of = array_type_indexes_of<sequence<IType, _First, _Last, _Inv>, ValType>;
 
 //	array with size_t index, `ValType`(value type) and number of index values
 	template <class ValType, size_t _Size>

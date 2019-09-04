@@ -11,6 +11,8 @@ namespace cype {
 //	specialization of `list` which has value(s)
 	template <class ValType, ValType First, ValType... Rests>
 	struct tmplval_list<ValType, First, Rests...> : _inconstructible {
+
+		using tmplval_type = ValType;
 	
 	//	push new value(s) to back
 		template <ValType... _Values>
@@ -100,6 +102,8 @@ namespace cype {
 	//	specialization of `list` which has no value
 	template <class ValType>
 	struct tmplval_list<ValType> : _inconstructible {
+
+		using tmplval_type = ValType;
 	
 	//	push new value(s) to back
 		template <ValType... _Values>
