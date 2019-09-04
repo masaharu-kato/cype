@@ -6,5 +6,6 @@ project(array_test)
 project(typed_set_test)
 project(typed_array_test)
 project(typed_vector_test)
+project(tmplval_list_test)
 
 add_subdirectory("test")
