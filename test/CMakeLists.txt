@@ -7,5 +7,6 @@ cmake_minimum_required (VERSION 3.8)
 add_executable (typed_set_test "typed_set_test.cpp")
 add_executable (array_test "array_test.cpp")
 add_executable (typed_array_test "typed_array_test.cpp")
+add_executable (typed_vector_test "typed_vector_test.cpp")
 
 # TODO: テストを追加し、必要な場合は、ターゲットをインストールします。
