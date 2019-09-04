@@ -11,6 +11,8 @@ namespace cype {
 //	specialization of `list` which has value(s)
 	template <class ValType, ValType First, ValType... Rests>
 	struct tmplval_list<ValType, First, Rests...> : _inconstructible {
+
+		using tmplval_type = ValType;
 	
 	//	push new value(s) to back
 		template <ValType... _Values>
@@ -100,6 +102,8 @@ namespace cype {
 	//	specialization of `list` which has no value
 	template <class ValType>
 	struct tmplval_list<ValType> : _inconstructible {
+
+		using tmplval_type = ValType;
 	
 	//	push new value(s) to back
 		template <ValType... _Values>
@@ -150,6 +154,9 @@ namespace cype {
 //	sequence type (range from `_First` to `_Last` (includes each limits), invertal of `_Inv`)
 	template <class ValType, ValType _First, ValType _Last, ValType _Inv = 1>
 	using sequence = typename _sequence_helper<ValType, _First, _Last, _Inv>::type;
+
+	template <size_t _First, size_t _Last, size_t _Inv = 1>
+	using index_sequence = sequence<size_t, _First, _Last, _Inv>;
 
 
 

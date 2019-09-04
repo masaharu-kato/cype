@@ -37,7 +37,7 @@ public:
 
 //	sample class `Vector`
 template <size_t N>
-struct Vector : public cype::array_of_indexed<::Value, 1, N> {
+struct Vector : public cype::array_range_of<size_t, ::Value, 1, N> {
 private:
 
 	struct _OpPlus  { template <class _T> static _T call(_T v) { return +v; } };
@@ -48,7 +48,7 @@ private:
 
 public:
 
-	using _base_type = cype::array_of_indexed<::Value, 1, N>;
+	using _base_type = cype::array_range_of<size_t, ::Value, 1, N>;
 
 	using _base_type::_base_type;
 
@@ -85,7 +85,7 @@ public:
 
 int main(void) {
 
-	Vector<4> vec1( 12.5, -21.3, 35.7, 42.6);
+	Vector<4> vec1(  5.9, -21.3, 35.7, 42.6);
 	Vector<4> vec2(  6.4,   8.5,- 2.5, 10.3);
  
 	auto vec3 = - vec1 + vec2;
