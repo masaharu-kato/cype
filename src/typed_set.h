@@ -13,6 +13,9 @@ namespace cype {
 		using type_list = type_utils::list<Types...>;
 		constexpr static size_t size = sizeof...(Types);
 
+	//	default constructor
+		typed_set() = default;
+
 	//	construct with specified types (corresponds to template argument deduction)
 		typed_set(const Types&... args)
 			: Types(args)... {}
