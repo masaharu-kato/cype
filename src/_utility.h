@@ -18,6 +18,14 @@ namespace cype {
 	};
 
 
+//	treat type as value
+	template <class _Type>
+	struct type_as_value {
+		using type = _Type;
+		type_as_value() = default;
+	};
+
+
 //	constexpr add operator (to avoid MSVC's bug)
 	template <size_t _V1, size_t _V2>
 	static constexpr size_t _index_add = _V1 + _V2;

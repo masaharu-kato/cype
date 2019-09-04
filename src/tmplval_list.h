@@ -11,39 +11,69 @@ namespace cype {
 //	specialization of `list` which has value(s)
 	template <class ValType, ValType First, ValType... Rests>
 	struct tmplval_list<ValType, First, Rests...> : _inconstructible {
+		template <class _ValType, _ValType... __Values>
+		friend struct tmplval_list;
 
 		using tmplval_type = ValType;
+
+		template <ValType... __Values>
+		using sameval_type = tmplval_list<ValType, __Values...>;
+
+	//	size (number) of values
+		static constexpr size_t size = 1 + sizeof...(Rests);
 	
 	//	push new value(s) to back
 		template <ValType... _Values>
-		using push_back = tmplval_list<ValType, First, Rests..., _Values...>;
+		using push_back = sameval_type<First, Rests..., _Values...>;
 		
 	//	push new value(s) to front
 		template <ValType... _Values>
-		using push_front = tmplval_list<ValType, _Values..., First, Rests...>;
+		using push_front = sameval_type<_Values..., First, Rests...>;
 
 	//	list of 2nd and later value(s)
-		using rests_list = tmplval_list<ValType, Rests...>;
+		using rests_list = sameval_type<Rests...>;
 
+	private:
 	//	helper function for `get`
-		template <std::size_t _Index>
+		template <size_t _Index>
 		constexpr static ValType _get() {
 			if constexpr(_Index == 0) {
 				return First;
 			}else{
-				return rests_list::template _get<_Index - 1>();
+				return rests_list::template get<_Index - 1>;
+			}
+		}
+
+	//	helper function for `range_of`
+		template <size_t _FirstIndex, size_t _LastIndex>
+		constexpr static auto _range_of() {
+			if constexpr(_LastIndex  < size) {
+				if constexpr(_FirstIndex <= _LastIndex) {
+					return type_as_value<typename range_of<_FirstIndex + 1, _LastIndex>::template push_front<get<_FirstIndex>>>();
+				}else{
+					return type_as_value<sameval_type<>>();
+				}
+			}else{
+				return type_as_value<void>();
 			}
 		}
 			
+	public:
 	//	get specified value
-		template <std::size_t _Index>
+		template <size_t _Index>
 		static constexpr ValType get = _get<_Index>();
+
+	//	get particial list
+		template <size_t _FirstIndex, size_t _LastIndex>
+		using range_of = typename decltype(_range_of<_FirstIndex, _LastIndex>())::type;
+
 
 	//	apply own value(s) to specified class
 		template <template <ValType...> class _Class>
 		using apply_to = _Class<First, Rests...>;
 
 
+	private:
 	//	helper function for `contains`
 		template <ValType _Value>
 		static constexpr bool _contains() {
@@ -69,6 +99,7 @@ namespace cype {
 			return false;
 		}
 
+	public:
 	//	returns whether contains specified value or not
 		template <ValType _Value>
 		constexpr static bool contains = _contains<_Value>();
@@ -85,15 +116,84 @@ namespace cype {
 
 	//	get unioned list with new value(s)
 		template <ValType... _Values>
-		using union_with = typename tmplval_list<ValType, First, Rests..., _Values...>::remove_duplicates;
+		using union_with = typename sameval_type<First, Rests..., _Values...>::remove_duplicates;
 
 	//	get list without specified value(s)
 		template <ValType... _Values>
 		using remove = std::conditional_t<
-			tmplval_list<ValType, _Values...>::template contains<First>,
+			sameval_type<_Values...>::template contains<First>,
 			typename rests_list::template remove<_Values...>,
 			typename rests_list::template remove<_Values...>::template push_front<First>
 		>;
+
+
+	private:
+	////	helpder function for `insert_sorted`
+	//	template <ValType __Value>
+	//	static constexpr auto _insert_sorted() {
+	//		if constexpr(__Value < First) {
+	//			return type_as_value<push_front<__Value>>();
+	//		}else{
+	//			return type_as_value<typename rests_list::template insert_sorted<__Value>::template push_front<First>>();
+	//		}
+	//	}
+
+	//	helper function for `merge_sorted_args`
+		template <class ValList, class SortFunction>
+		static constexpr auto _merge_of_sorted() {
+			if constexpr(ValList::size) {
+				if constexpr(SortFunction::template call<ValList::template get<0>, First>()) {
+					return type_as_value<typename push_front<ValList::template get<0>>::template merge_of_sorted<typename ValList::rests_list, SortFunction>>();
+				}else{
+					return type_as_value<typename rests_list::template merge_of_sorted<ValList, SortFunction>::template push_front<First>>();
+				}
+			}else{
+				return type_as_value<tmplval_list>();
+			}
+		}
+
+	//	helpr function for `sorted`
+		template <class SortFunction>
+		static constexpr auto _sorted() {
+			if constexpr(size >= 2) {
+				using left_part = range_of<0, size / 2 - 1>;
+				using right_part = range_of<size / 2, size - 1>;
+				return type_as_value<typename left_part::template sorted<SortFunction>::template merge_of_sorted<typename right_part::template sorted<SortFunction>, SortFunction>>();
+			}else{
+				return type_as_value<tmplval_list>();
+			}
+		}
+
+
+	public:
+	////	insert new value (with the state that own values are sorted)
+	//	template <ValType __Value>
+	//	using insert_sorted = typename decltype(_insert_sorted<__Value>())::type;
+
+	//	merge with sorted with sort function
+		template <class ValList, class SortFunction>
+		using merge_of_sorted = typename decltype(_merge_of_sorted<ValList, SortFunction>())::type;
+		
+	//	sort with sort function
+		template <class SortFunction>
+		using sorted = typename decltype(_sorted<SortFunction>())::type;
+
+
+	//	sort function for value sorting
+		struct value_sort_function : _inconstructible {
+			template <ValType Val1, ValType Val2>
+			static constexpr bool call() {
+				return Val1 < Val2;
+			}
+		};
+
+
+	//	merge with sorted by values
+		template <class ValList>
+		using merge_of_value_sorted = merge_of_sorted<ValList, value_sort_function>;
+
+	//	sort values
+		using value_sorted = sorted<value_sort_function>;
 
 	};
 
@@ -102,16 +202,21 @@ namespace cype {
 	//	specialization of `list` which has no value
 	template <class ValType>
 	struct tmplval_list<ValType> : _inconstructible {
-
+		
 		using tmplval_type = ValType;
+
+		static constexpr size_t size = 0;
+
+		template <ValType... __Values>
+		using sameval_type = tmplval_list<ValType, __Values...>;
 	
 	//	push new value(s) to back
 		template <ValType... _Values>
-		using push_back = tmplval_list<ValType, _Values...>;
+		using push_back = sameval_type<_Values...>;
 		
 	//	push new value(s) to front
 		template <ValType... _Values>
-		using push_front = tmplval_list<ValType, _Values...>;
+		using push_front = sameval_type<_Values...>;
 
 		template <std::size_t _Index>
 		using get = void;
@@ -123,10 +228,30 @@ namespace cype {
 		template <ValType _Value>
 		static constexpr bool contains = false;
 
-		using remove_duplicates = tmplval_list<ValType>;
+		using remove_duplicates = sameval_type<>;
 
 		template <ValType... _Values>
-		using remove = tmplval_list<ValType>;
+		using remove = sameval_type<>;
+
+		
+	//	insert new value (with the state that own values are sorted)
+		template <ValType __Value>
+		using insert_sorted = sameval_type<__Value>;
+
+	//	merge with sorted by sort function
+		template <class ValList, class SortFunction>
+		using merge_of_sorted = ValList;
+		
+	//	sort by sort function
+		template <class SortFunction>
+		using sorted = tmplval_list;
+
+	//	merge with sorted by values
+		template <class ValList>
+		using merge_of_value_sorted = ValList;
+		
+	//	sort by values
+		using value_sorted = tmplval_list;
 
 	};
 

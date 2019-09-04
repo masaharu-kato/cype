@@ -33,7 +33,8 @@ namespace cype {
 
 	//	get value of specified index
 		template <IType _Index>
-		IndexedType<_Index> get() const noexcept {
+		IndexedType<_Index>
+		get() const noexcept {
 			return base_type::template get<IndexedType<_Index>>();
 		}
 		
@@ -52,9 +53,30 @@ namespace cype {
 
 	//	rearrange (change order of) values and get new array
 		template <IType... __Indexes>
-		array_index_args_of rearrange() const noexcept {
+		array_index_args_of
+		rearrange() const noexcept {
 			return {get_raw<__Indexes>()...};
 		}
+
+	//	helper class for rearrange() with IndexList
+		template <IType... __Indexes>
+		struct _rearrange_with_index_args_of : _inconstructible {
+			array_index_args_of
+			call(const array_index_args_of& _instance) const noexcept {
+				return _instance.rearrange<__Indexes...>();
+			}
+		};
+
+		template <class IndexList>
+		array_index_args_of
+		rearrange() const noexcept {
+			return typename IndexList::template apply_to<_rearrange_with_index_args_of>::call(this);
+		}
+
+	//	sort
+		array_index_args_of
+		sort() const noexcept;
+
 
 		using base_type::set;
 		
