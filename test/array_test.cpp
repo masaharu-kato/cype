@@ -123,5 +123,28 @@ int main(void) {
 	std::cout << "arr3:" << std::endl;
 	arr3.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
 
+	cype::array<int, 10> arrn;
+	arrn.fill(12);
+
+	arrn.set<3>(34);
+	arrn.set<8>(85);
+
+	std::cout << "arrn: " << std::endl;
+	arrn.for_each([](auto v){
+		std::cout << "[" << decltype(v)::index << "] " << v.value() << std::endl;
+	});
+
+
+	cype::array<std::string, 10> arr4;
+	arr4.fill("empty");
+
+	arr4.set<3>("Element 3");
+	arr4.set<8>("Element 8");
+
+	std::cout << "arr4: " << std::endl;
+	arr4.for_each([](auto v){
+		std::cout << "[" << decltype(v)::index << "] " << v.value() << std::endl;
+	});
+
 	return 0;
 }

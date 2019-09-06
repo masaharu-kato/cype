@@ -50,7 +50,7 @@ namespace cype {
 	template <class ValType, class IType>
 	struct _indexed_preset_types : _static_class {
 		template <IType... _DimIndexes>
-		using type = _indexed_prototype<ValType, IType, _DimIndexes...>;
+		using multi_type = _indexed_prototype<ValType, IType, _DimIndexes...>;
 
 		template <IType _DimIndex>
 		using single_type = _indexed_prototype<ValType, IType, _DimIndex>;
@@ -82,6 +82,7 @@ namespace cype {
 		}
 		using type = typename decltype(_call())::type;
 	};
+
 
 	template <class IType, IType _Index, IType FirstSize, IType... RestSizes>
 	struct _misa_sized_indexes_type<IType, _Index, FirstSize, RestSizes...> {
@@ -124,11 +125,6 @@ namespace cype {
 		using indexes = index_sequence<0, all_size - 1>;
 
 	};
-
-	template <class ValType, class IType, IType... _Sizes>
-	using _md_type_size_args_of = _md_indexed_size_args_of<IType, _indexed_preset_types<ValType, IType>::template type, _Sizes...>;
-
-
 
 
 }

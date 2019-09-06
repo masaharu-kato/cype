@@ -1,5 +1,5 @@
 #include <iostream>
-#include "array.h"
+#include "md_array.h"
 
 
 template <class ValList>
@@ -25,9 +25,9 @@ void output_md_array(const MdArray& mda) {
 
 int main(void) {
 
-	cype::md_array<int, 24> mdarr1;
-	cype::md_array<int, 6, 4> mdarr2;
-	cype::md_array<int, 3, 2, 4> mdarr3;
+	cype::md_array<int, 12> mdarr1;
+	cype::md_array<int, 3, 5> mdarr2;
+	cype::md_array<int, 2, 3, 2> mdarr3;
 
 	mdarr1.for_each_ref([](auto& elm){
 		elm.value() = std::remove_reference_t<decltype(elm)>::indexes::visit([](int v1){ 
@@ -55,6 +55,16 @@ int main(void) {
 
 	std::cout << "mdarr3: " << std::endl;
 	output_md_array(mdarr3);
+
+
+	cype::md_array<std::string, 2, 2, 3> mdarr4;
+	mdarr4.fill("empty");
+
+	mdarr4.set<0, 1, 1>("Element-011");
+	mdarr4.set<1, 0, 2>("Element-102");
+	
+	std::cout << "mdarr4: " << std::endl;
+	output_md_array(mdarr4);
 
 	return 0;
 }
