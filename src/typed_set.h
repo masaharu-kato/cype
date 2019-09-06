@@ -49,20 +49,20 @@ namespace cype {
 		}
 
 
-		//template <class... _Types>
-		//Data<_Types&...> get_ref_data() {
-		//	return {*this};
-		//}
+		template <class... _Types>
+		typed_set<_Types&...> extract_ref() {
+			return {*this};
+		}
 
-		//template <class _Type>
-		//_Type& get_ref() {
-		//	return {*this};
-		//}
+		template <class _Type>
+		_Type& get_ref() {
+			return {*this};
+		}
 
-		//template <size_t _Index>
-		//auto get_ref() const {
-		//	return get_ref<type_list::get<_Index>>();
-		//}
+		template <size_t _Index>
+		auto get_ref() const {
+			return get_ref<type_list::template get<_Index>>();
+		}
 
 
 	//	Get offset of specified type
@@ -152,11 +152,23 @@ namespace cype {
 		void for_each(const _Function& func) const {
 			_void{(func(get<Types>()), 0)...};
 		}
+		
+	//	call function `func` which receives one value with each own values, can modify values
+		template <class _Function>
+		void for_each_ref(const _Function& func) {
+			_void{(func(get_ref<Types>()), 0)...};
+		}
 
 	//	call function `_StaticFunction::call` which receives one value with each own values
 		template <class _StaticFunction>
 		void for_each() const {
 			_void{(_StaticFunction::call(get<Types>()), 0)...};
+		}
+
+	//	call function `_StaticFunction::call` which receives one value with each own values, can modify values
+		template <class _StaticFunction>
+		void for_each() {
+			_void{(_StaticFunction::call(get_ref<Types>()), 0)...};
 		}
 		
 	//	operate (map) with function `func`, which receives one value, on each own values
@@ -225,12 +237,6 @@ namespace cype {
 		//template <class _StaticVisiter>
 		//auto visit_ref() {
 		//	return _StaticVisiter::call(get_ref<Types>()...);
-		//}
-
-		//template <class _Visiter, size_t _Index = 0>
-		//void for_each_ref(_Visiter& func) {
-		//	func(get_ref<_Index>());
-		//	if constexpr(_Index + 1 < size) visit_each_ref(func, _Index + 1);
 		//}
 
 	//	Construct specified type (apply own values to constructer arguments)

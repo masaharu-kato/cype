@@ -8,9 +8,9 @@ namespace cype {
 	using diff_t = std::ptrdiff_t;
 
 //	structure for dismiss return values
-	template <class T = int>
+//	template <class T = int>
 	struct _void {
-		_void(std::initializer_list<T>) {}
+		_void(std::initializer_list<int /*T*/>) {}
 	};
 
 

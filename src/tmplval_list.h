@@ -50,7 +50,9 @@ namespace cype {
 		using push_front = sameval_type<_Values..., First, Rests...>;
 
 
-	private:
+//	public, because clang doesn't allow delctype of private functions
+	public:
+	//	private:
 		
 	//	helper function for `get`
 		template <size_t _Index>
@@ -105,7 +107,7 @@ namespace cype {
 	//	helper function for `merge_sorted_args`
 		template <class ValList, class SortFunction>
 		static constexpr auto _merge_of_sorted() {
-			if constexpr(ValList::size) {
+			if constexpr(ValList::size > 0) {
 				if constexpr(SortFunction::template call<ValList::template get<0>, First>()) {
 					return type_as_value<typename push_front<ValList::template get<0>>::template merge_of_sorted<typename ValList::rests_list, SortFunction>>();
 				}else{
@@ -209,9 +211,18 @@ namespace cype {
 			}
 		}
 
-	//	get indexes list which sized with own values
-		template <ValType __Index>
-		using own_sized_indexes = typename decltype(_own_sized_indexes<__Index>())::type;
+
+	//	visit static function
+		template <class StaticFunction>
+		constexpr static auto visit() {
+			return StaticFunction::call(First, Rests...);
+		}
+
+	//	visit dynamic function
+		template <class Function>
+		constexpr static auto visit(const Function& func) {
+			return func(First, Rests...);
+		}
 
 	};
 
@@ -289,7 +300,19 @@ namespace cype {
 		
 	//	sort by values
 		using value_sorted = tmplval_list;
+		
 
+	//	visit static function
+		template <class StaticFunction>
+		constexpr static auto visit() {
+			return StaticFunction::call();
+		}
+
+	//	visit dynamic function
+		template <class Function>
+		constexpr static auto visit(const Function& func) {
+			return func();
+		}
 	};
 
 

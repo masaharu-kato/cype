@@ -141,18 +141,19 @@ namespace cype {
 	using array_of_indexed = array_range_of<size_t, IndexedType, 0, _Size - 1>;
 	
 
-//	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and list of sizes of each dimension
-	template <class _SizesList, template <typename _SizesList::tmplval_type...> class MultiIndexedType>
-	using md_array_of_sized_indexed_of = array_indexes_of<
-		typename _sized_indexed_of<_SizesList, MultiIndexedType>::indexes,
-		_sized_indexed_of<_SizesList, MultiIndexedType>::template type
-	>;
+////	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and list of sizes of each dimension
+//	template <class _SizesList, template <typename _SizesList::tmplval_type...> class MultiIndexedType>
+//	using md_array_of_sized_indexed_of = array_indexes_of<
+//		typename _sized_indexed_of<_SizesList, MultiIndexedType>::indexes,
+//		_sized_indexed_of<_SizesList, MultiIndexedType>::template type
+//	>;
 
 //	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and sizes of each dimension
 	template <template <size_t...> class MultiIndexedType, size_t... _Sizes>
-	using md_array_of_indexed = md_array_of_sized_indexed_of<tmplval_list<size_t, _Sizes...>, MultiIndexedType>;
-
-
+	using md_array_of_indexed = array_indexes_of<
+		typename _md_indexed_size_args_of<size_t, MultiIndexedType, _Sizes...>::indexes,
+		_md_indexed_size_args_of<size_t, MultiIndexedType, _Sizes...>::template type
+	>;
 
 //	array with `IType`(index type), `ValType`(value type) and list of index values
 	template <class IndexList, class ValType>
@@ -169,16 +170,19 @@ namespace cype {
 	template <class ValType, size_t _Size>
 	using array_of_type = array_type_range_of<size_t, ValType, 0, _Size - 1>;
 	
-//	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and list of sizes of each dimension
-	template <class _SizesList, class ValType>
-	using md_array_of_type_sized_of = array_indexes_of<
-		typename _sized_type_of<_SizesList, ValType>::indexes,
-		_sized_type_of<_SizesList, ValType>::template type 
-	>;
+////	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and list of sizes of each dimension
+//	template <class _SizesList, class ValType>
+//	using md_array_of_type_sized_of = array_indexes_of<
+//		typename _sized_type_of<_SizesList, ValType>::indexes,
+//		_sized_type_of<_SizesList, ValType>::template type 
+//	>;
 
 //	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and sizes of each dimension
 	template <class ValType, size_t... _Sizes>
-	using md_array_of_type = md_array_of_type_sized_of<tmplval_list<size_t, _Sizes...>, ValType>;
+	using md_array_of_type = array_indexes_of<
+		typename _md_type_size_args_of<ValType, size_t, _Sizes...>::indexes,
+		_md_type_size_args_of<ValType, size_t, _Sizes...>::template type
+	>;
 
 
 

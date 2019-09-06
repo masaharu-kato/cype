@@ -40,6 +40,10 @@ namespace cype {
 			return _value;
 		}
 
+		original_type& value() noexcept {
+			return _value;
+		}
+
 	};
 
 //	preset template argument `IType`(index type), `Type`(original type) of `indexed` class
@@ -70,6 +74,35 @@ namespace cype {
 		return indexed<ValType, _Index>(value);
 	}
 
+
+	template <class IType, IType _Index, IType... Sizes>
+	struct _misa_sized_indexes_type {
+		constexpr static auto _call() {
+			return type_as_value<tmplval_list<IType>>();
+		}
+		using type = typename decltype(_call())::type;
+	};
+
+	template <class IType, IType _Index, IType FirstSize, IType... RestSizes>
+	struct _misa_sized_indexes_type<IType, _Index, FirstSize, RestSizes...> {
+		constexpr static auto _call() {
+			if constexpr(sizeof...(RestSizes) > 0) {
+				return type_as_value<typename _misa_sized_indexes_type<IType, _Index / FirstSize, RestSizes...>::type::template push_front<_Index % FirstSize>>();
+			}else{
+				return type_as_value<tmplval_list<IType, _Index>>();
+			}
+		}
+		using type = typename decltype(_call())::type;
+	};
+
+	template <class IType, IType First, IType... Rests>
+	constexpr IType _sum_product() {
+		if constexpr(sizeof...(Rests) > 0) {
+			return First * _sum_product<IType, Rests...>();
+		}else{
+			return First;
+		}
+	}
 	
 //	convert multi-dimensional indexes to single index value
 //
@@ -80,20 +113,22 @@ namespace cype {
 //	0:(0, 0, 0) 1:(1, 0, 0) 2:(2, 0, 0) 3:(0, 1, 0) 4:(1, 1, 0) 5:(2, 1, 0)
 //	6:(0, 0, 1) 7:(1, 0, 1) 8:(2, 0, 1) 9:(0, 1, 1) ...
 //
-	template <class _SizeList, template <typename _SizeList::tmplval_type...> class MultiIndexedType>
-	struct _sized_indexed_of : _static_class {
+	template <class IType, template <IType...> class MultiIndexedType, IType... _Sizes>
+	struct _md_indexed_size_args_of : _static_class {
 
 		template <size_t _DimIndex>
-		using type = typename _SizeList::template own_sized_indexes<_DimIndex>::template apply_to<MultiIndexedType>;
+		using type = typename _misa_sized_indexes_type<IType, _DimIndex, _Sizes...>::type::template apply_to<MultiIndexedType>;
 
-		static constexpr auto all_size = _SizeList::sum_prod();
+		static constexpr auto all_size = _sum_product<IType, _Sizes...>();
 
 		using indexes = index_sequence<0, all_size - 1>;
 
 	};
 
-	template <class _SizeList, class ValType>
-	using _sized_type_of = _sized_indexed_of<_SizeList, _indexed_preset_types<ValType, typename _SizeList::tmplval_type>::template type>;
+	template <class ValType, class IType, IType... _Sizes>
+	using _md_type_size_args_of = _md_indexed_size_args_of<IType, _indexed_preset_types<ValType, IType>::template type, _Sizes...>;
+
+
 
 
 }

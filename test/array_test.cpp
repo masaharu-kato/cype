@@ -123,12 +123,5 @@ int main(void) {
 	std::cout << "arr3:" << std::endl;
 	arr3.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
 
-	using vl1 = cype::tmplval_list<size_t, 3, 2, 2>;
-	using vl2 = vl1::own_sized_indexes<5>;
-
-	std::cout << typeid(vl1).name() << std::endl;
-	std::cout << typeid(vl2).name() << std::endl;
-
-
 	return 0;
 }
