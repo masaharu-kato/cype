@@ -9,6 +9,8 @@ public:
 
 	original_type value;
 
+	Value() = default;
+
 	Value(original_type value)
 		: value(value) {}
 
@@ -52,6 +54,8 @@ public:
 
 	using _base_type::_base_type;
 
+	Vector() = default;
+
 	Vector(const _base_type& v) : _base_type(v) {}
 
 
@@ -82,8 +86,19 @@ public:
 };
 
 
+template <class ValList>
+void output_tmplval_list() {
+	std::cout << ValList::template get<0>;
+	if constexpr (ValList::size > 1) {
+		std::cout << ",";
+		output_tmplval_list<typename ValList::rests_list>();
+	}
+};
+
+
 
 int main(void) {
+
 
 	Vector<4> vec1(  5.9, -21.3, 35.7, 42.6);
 	Vector<4> vec2(  6.4,   8.5,- 2.5, 10.3);
@@ -107,6 +122,13 @@ int main(void) {
 
 	std::cout << "arr3:" << std::endl;
 	arr3.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
+
+	using vl1 = cype::tmplval_list<size_t, 3, 2, 2>;
+	using vl2 = vl1::own_sized_indexes<5>;
+
+	std::cout << typeid(vl1).name() << std::endl;
+	std::cout << typeid(vl2).name() << std::endl;
+
 
 	return 0;
 }

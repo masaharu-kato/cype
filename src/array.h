@@ -12,7 +12,11 @@ namespace cype {
 
 	public:
 	//	using base_type::typed_set;
-		
+
+	//	default constructor
+		array_index_args_of() = default;
+	
+	//	construct from base type	
 		array_index_args_of(const base_type& v) : base_type(v) {}
 
 	//	construct with indexed values
@@ -60,7 +64,7 @@ namespace cype {
 
 	//	helper class for rearrange() with IndexList
 		template <IType... __Indexes>
-		struct _rearrange_with_index_args_of : _inconstructible {
+		struct _rearrange_with_index_args_of : _static_class {
 			array_index_args_of
 			call(const array_index_args_of& _instance) const noexcept {
 				return _instance.rearrange<__Indexes...>();
@@ -102,12 +106,12 @@ namespace cype {
 
 //	array with `IType`(Index Type), `ValType`(Value Type) and index values
 	template <class IType, class ValType, IType... _Indexes>
-	using array_type_index_args_of = array_index_args_of<size_t, _indexed_sized_of<size_t, ValType>::template type, _Indexes...>;
+	using array_type_index_args_of = array_index_args_of<size_t, _indexed_preset_types<ValType, size_t>::template single_type, _Indexes...>;
 
 
 //	preset template arguments `IType` and `IndexedType` of `array_index_args_of` class
 	template <class IType, template <IType> class IndexedType>
-	struct _array_indexed_type_of : _inconstructible {
+	struct _array_preset_indexed : _static_class {
 		template <IType... _Indexes>
 		using indexes_of = array_index_args_of<IType, IndexedType, _Indexes...>;
 	};
@@ -115,7 +119,7 @@ namespace cype {
 
 //	preset template arguments `IType` and `ValType` of `array_type_index_args_of` class
 	template <class IType, class ValType>
-	struct _array_type_indexed_type_of : _inconstructible {
+	struct _array_preset_valtype : _static_class {
 		template <IType... _Indexes>
 		using indexes_of = array_type_index_args_of<IType, ValType, _Indexes...>;
 	};
@@ -123,28 +127,58 @@ namespace cype {
 
 //	array with `IType`(index type), `IndexedType`(index-templated value type) and list of index values
 	template <class IndexList, template <typename IndexList::tmplval_type> class IndexedType>
-	using array_indexes_of = typename IndexList::template apply_to<_array_indexed_type_of<typename IndexList::tmplval_type, IndexedType>::template indexes_of>;
+	using array_indexes_of = typename IndexList::template apply_to<_array_preset_indexed<typename IndexList::tmplval_type, IndexedType>::template indexes_of>;
 		
 //	array with `IType`(index type), `IndexedType`(index-templated value type) and range of index values
-	template <class IType, template <IType> class IndexedType, IType _First, IType _Last, IType _Inv = 1>
-	using array_range_of = array_indexes_of<sequence<IType, _First, _Last, _Inv>, IndexedType>;
+	template <class IType, template <IType> class IndexedType, IType _First, IType _Last, class DiffType = IType, DiffType _Inv = 1>
+	using array_range_of = array_indexes_of<
+		sequence<IType, _First, _Last, DiffType, _Inv>,
+		IndexedType
+	>;
 
-//	array with size_t index, `IndexedType`(index-templated value type) and number of index values
+//	array with `size_t` index, `IndexedType`(index-templated value type) and number of index values
 	template <template <size_t> class IndexedType, size_t _Size>
 	using array_of_indexed = array_range_of<size_t, IndexedType, 0, _Size - 1>;
 	
 
+//	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and list of sizes of each dimension
+	template <class _SizesList, template <typename _SizesList::tmplval_type...> class MultiIndexedType>
+	using md_array_of_sized_indexed_of = array_indexes_of<
+		typename _sized_indexed_of<_SizesList, MultiIndexedType>::indexes,
+		_sized_indexed_of<_SizesList, MultiIndexedType>::template type
+	>;
+
+//	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and sizes of each dimension
+	template <template <size_t...> class MultiIndexedType, size_t... _Sizes>
+	using md_array_of_indexed = md_array_of_sized_indexed_of<tmplval_list<size_t, _Sizes...>, MultiIndexedType>;
+
+
+
 //	array with `IType`(index type), `ValType`(value type) and list of index values
 	template <class IndexList, class ValType>
-	using array_type_indexes_of = typename IndexList::template apply_to<_array_type_indexed_type_of<typename IndexList::tmplval_type, ValType>::template indexes_of>;
+	using array_type_indexes_of = typename IndexList::template apply_to<_array_preset_valtype<typename IndexList::tmplval_type, ValType>::template indexes_of>;
 		
 //	array with `IType`(index type), `ValType`(value type) and range of index values
-	template <class IType, class ValType, IType _First, IType _Last, IType _Inv = 1>
-	using array_type_range_of = array_type_indexes_of<sequence<IType, _First, _Last, _Inv>, ValType>;
+	template <class IType, class ValType, IType _First, IType _Last, class DiffType = IType, DiffType _Inv = 1>
+	using array_type_range_of = array_type_indexes_of<
+		sequence<IType, _First, _Last, DiffType, _Inv>,
+		ValType
+	>;
 
 //	array with size_t index, `ValType`(value type) and number of index values
 	template <class ValType, size_t _Size>
 	using array_of_type = array_type_range_of<size_t, ValType, 0, _Size - 1>;
+	
+//	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and list of sizes of each dimension
+	template <class _SizesList, class ValType>
+	using md_array_of_type_sized_of = array_indexes_of<
+		typename _sized_type_of<_SizesList, ValType>::indexes,
+		_sized_type_of<_SizesList, ValType>::template type 
+	>;
+
+//	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and sizes of each dimension
+	template <class ValType, size_t... _Sizes>
+	using md_array_of_type = md_array_of_type_sized_of<tmplval_list<size_t, _Sizes...>, ValType>;
 
 
 
@@ -152,6 +186,11 @@ namespace cype {
 //	alias of array_type_of
 	template <class ValType, size_t _Size>
 	using array = array_of_type<ValType, _Size>;
+
+
+//	alias of md_array_of_type
+	template <class ValType, size_t... _Sizes>
+	using md_array = md_array_of_type<ValType, _Sizes...>;
 
 
 //	construct array with values

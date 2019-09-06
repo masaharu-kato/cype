@@ -12,12 +12,15 @@ namespace type_utils {
 
 //	list of types
 	template <class... Types>
-	struct list;
+	class list;
 	
 //	specialization of `list` which has type(s)
 	template <class First, class... Rests>
-	struct list<First, Rests...> {
-	
+	class list<First, Rests...> : _static_class {
+	public:
+		template <class... Types>
+		friend class list;
+
 	//	push new value(s) to back
 		template <class... _Types>
 		using push_back = list<First, Rests..., _Types...>;
@@ -30,7 +33,7 @@ namespace type_utils {
 		using rests_list = list<Rests...>;
 		
 	//	get specified value
-		template <std::size_t _Index>
+		template <size_t _Index>
 		using get = std::conditional_t<
 			_Index == 0,
 			First,
@@ -41,7 +44,9 @@ namespace type_utils {
 		template <template <class...> class _Class>
 		using apply_to = _Class<First, Rests...>;
 
-	
+
+	private:
+		
 	//	helper function for `contains`
 		template <class Type>
 		static constexpr bool _contains() {
@@ -66,6 +71,9 @@ namespace type_utils {
 			}
 			return false;
 		}
+
+
+	public:
 
 	//	returns whether contains specified type or not
 		template <class _Type>
@@ -98,8 +106,11 @@ namespace type_utils {
 
 //	specialization of `list` which has no type
 	template <>
-	struct list<> {
-	
+	class list<> {
+	public:
+		template <class... Types>
+		friend class list;
+
 	//	push new type(s) to back
 		template <class... _Types>
 		using push_back = list<_Types...>;

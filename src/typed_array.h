@@ -27,7 +27,7 @@ namespace cype {
 	};
 
 	template <class IndexesType>
-	struct _typed_array_preset_indexes : public _inconstructible {
+	struct _typed_array_preset_indexes : public _static_class {
 		template <class... Types>
 		using type = typed_array_indexes_of<IndexesType, Types...>;
 	};
