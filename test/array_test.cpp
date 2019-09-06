@@ -9,6 +9,8 @@ public:
 
 	original_type value;
 
+	Value() = default;
+
 	Value(original_type value)
 		: value(value) {}
 
@@ -52,6 +54,8 @@ public:
 
 	using _base_type::_base_type;
 
+	Vector() = default;
+
 	Vector(const _base_type& v) : _base_type(v) {}
 
 
@@ -82,8 +86,19 @@ public:
 };
 
 
+template <class ValList>
+void output_tmplval_list() {
+	std::cout << ValList::template get<0>;
+	if constexpr (ValList::size > 1) {
+		std::cout << ",";
+		output_tmplval_list<typename ValList::rests_list>();
+	}
+};
+
+
 
 int main(void) {
+
 
 	Vector<4> vec1(  5.9, -21.3, 35.7, 42.6);
 	Vector<4> vec2(  6.4,   8.5,- 2.5, 10.3);
@@ -107,6 +122,29 @@ int main(void) {
 
 	std::cout << "arr3:" << std::endl;
 	arr3.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
+
+	cype::array<int, 10> arrn;
+	arrn.fill(12);
+
+	arrn.set<3>(34);
+	arrn.set<8>(85);
+
+	std::cout << "arrn: " << std::endl;
+	arrn.for_each([](auto v){
+		std::cout << "[" << decltype(v)::index << "] " << v.value() << std::endl;
+	});
+
+
+	cype::array<std::string, 10> arr4;
+	arr4.fill("empty");
+
+	arr4.set<3>("Element 3");
+	arr4.set<8>("Element 8");
+
+	std::cout << "arr4: " << std::endl;
+	arr4.for_each([](auto v){
+		std::cout << "[" << decltype(v)::index << "] " << v.value() << std::endl;
+	});
 
 	return 0;
 }

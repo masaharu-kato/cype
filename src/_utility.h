@@ -1,20 +1,22 @@
 #pragma once
 #include <initializer_list>
+#include <cstddef>
 
 namespace cype {
 
 	using size_t = std::size_t;
+	using diff_t = std::ptrdiff_t;
 
 //	structure for dismiss return values
-	template <class T = int>
+//	template <class T = int>
 	struct _void {
-		_void(std::initializer_list<T>) {}
+		_void(std::initializer_list<int /*T*/>) {}
 	};
 
 
-//	inconstructible structure (inherit this)
-	struct _inconstructible {
-		_inconstructible() = delete;
+//	inconstructible static class (inherit this from static class)
+	class _static_class {
+		_static_class() = delete;
 	};
 
 
