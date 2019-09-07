@@ -8,7 +8,7 @@ namespace cype {
 	template <class ValType, class... Types>
 	struct typed_map : typed_set<typed<Types, ValType>...> {
 		using base_type = typed_set<typed<Types, ValType>...>;
-		using typename base_type::typed_set;
+		using /*typename*/ base_type::typed_set;
 		
 	//	construct with specified types (corresponds to template argument deduction)
 		typed_map(const typed<Types, ValType>&... args)

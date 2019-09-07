@@ -3,6 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories("src")
 
 project(array_test)
+project(array_2d_test)
 project(md_array_test)
 project(typed_set_test)
 project(typed_array_test)

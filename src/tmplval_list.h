@@ -84,11 +84,23 @@ namespace cype {
 			if constexpr(First == _Value){
 				return true;
 			}else{
-				if constexpr(sizeof...(Rests) != 0){
+				if constexpr(sizeof...(Rests) > 0){
 					return rests_list::template contains<_Value>;
 				}
 			}
 			return false;
+		}
+
+	//	helper function for `index_of`
+		template <ValType _Value>
+		constexpr static size_t _index_of() {
+			if constexpr(First == _Value){
+				return 0;
+			}else{
+				if constexpr(sizeof...(Rests) > 0){
+					return rests_list::template index_of<_Value> + 1;
+				}
+			}
 		}
 
 	//	helper function for `is_unique`
@@ -150,6 +162,10 @@ namespace cype {
 	//	returns whether contains specified value or not
 		template <ValType _Value>
 		constexpr static bool contains = _contains<_Value>();
+
+	//	returns the location (index) of contains specified value
+		template <ValType _Value>
+		constexpr static size_t index_of = _index_of<_Value>();
 
 	//	returns whether own value(s) are unique (no duplicates)
 		constexpr static bool is_unique = _is_unique();

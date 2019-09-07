@@ -10,8 +10,26 @@ namespace cype {
 	class array_index_args_of : public typed_set<IndexedType<_Indexes>...> {
 		using base_type = typed_set<IndexedType<_Indexes>...>;
 
+	//	to avoid MSVC's bug
+		template <IType _Index>
+		using original_type_at = typename IndexedType<_Index>::original_type;
+
 	public:
-	//	using base_type::typed_set;
+		using this_type = array_index_args_of;
+
+		template <IType _I>
+		using my_indexed_type = IndexedType<_I>;
+
+		using my_indexes = tmplval_list<IType, _Indexes...>;
+
+		using base_type::base_type;
+		using base_type::get;
+		using base_type::get_ref;
+		using base_type::extract;
+		using base_type::extract_to;
+		using base_type::set;
+		using base_type::size;
+
 
 	//	default constructor
 		array_index_args_of() = default;
@@ -24,8 +42,8 @@ namespace cype {
 			: base_type(vals...) {}
 
 	//	construct with non-indexed (original) values
-		array_index_args_of(typename IndexedType<_Indexes>::original_type... vals) noexcept
-			: base_type(IndexedType<_Indexes>(vals)...) {}
+		array_index_args_of(original_type_at<_Indexes>... vals) noexcept
+		 	: base_type(IndexedType<_Indexes>(vals)...) {}
 
 	//	construct from different typed array
 		template <template <IType> class _IndexedType>
@@ -36,8 +54,6 @@ namespace cype {
 		template <class _Type>
 		explicit array_index_args_of(const typename IndexedType<0>::original_type& val)
 			: base_type(IndexedType<_Indexes>(val)...) {}
-
-		using base_type::get;
 
 
 	//	get value of specified index
@@ -54,6 +70,12 @@ namespace cype {
 			return {*this};
 		}
 
+	//	extract values to other indexed array
+		template <IType... __Indexes>
+		void extract_to(array_index_args_of<IType, IndexedType, __Indexes...>& out) noexcept {
+			_void{(out.set<__Indexes>(get<__Indexes>()), 0)...};
+		}
+
 	//	get raw (original) typed value of specified index
 		template <IType _Index>
 		typename IndexedType<_Index>::original_type
@@ -63,44 +85,66 @@ namespace cype {
 
 	//	rearrange (change order of) values and get new array
 		template <IType... __Indexes>
-		array_index_args_of
-		rearrange() const noexcept {
+		this_type rearrange() const noexcept {
 			return {get_raw<__Indexes>()...};
 		}
 
-	//	helper class for rearrange() with IndexList
+	//	reindex (set new indexes to) values and get new array
 		template <IType... __Indexes>
-		struct _rearrange_with_index_args_of : _static_class {
-			array_index_args_of
-			call(const array_index_args_of& _instance) const noexcept {
-				return _instance.rearrange<__Indexes...>();
-			}
-		};
-
-		template <class IndexList>
-		array_index_args_of
-		rearrange() const noexcept {
-			return typename IndexList::template apply_to<_rearrange_with_index_args_of>::call(this);
+		array_index_args_of<IType, IndexedType, __Indexes...>
+		reindex_with_args() const noexcept {
+			return {get_raw<_Indexes>()...};
 		}
 
-	//	sort
-		array_index_args_of
-		sort() const noexcept;
+	private:
+	//	helper class for function call with index list
+		template <IType... __Indexes>
+		struct with_index_args_of : _static_class {
+			
+			static this_type
+			rearrange(const this_type& arr) noexcept {
+				return arr.rearrange<__Indexes...>();
+			}
 
+			static array_index_args_of<IType, IndexedType, __Indexes...>
+			reindex_with_args(const this_type& arr) noexcept {
+				return arr.reindex_with_args<__Indexes...>();
+			}
 
-		using base_type::set;
+		};
+
+	public:
+		template <class IndexList>
+		this_type rearrange() const noexcept {
+			return IndexList::template apply_to<with_index_args_of>::rearrange(*this);
+		}
+		
+		template <class IndexList>
+		auto reindex() const noexcept {
+			return IndexList::template apply_to<with_index_args_of>::reindex_with_args(*this);
+		}
+
+		template <IType _IStart>
+		auto reindex() const noexcept {
+			return reindex<sequence<IType, _IStart, _IStart + size - 1>>();
+		}
+
+		auto reindex() const noexcept {
+			return reindex<0>();
+		}
+
 		
 
 	//	set value of specified index
 		template <IType _Index>
 		void set(const IndexedType<_Index>& val) noexcept {
-			base_type::template set((IndexedType<_Index>)val);
+			base_type::template set(val);
 		}
 
 	//	set value of specified index using raw (original) typed value
 		template <IType _Index>
 		void set(const typename IndexedType<_Index>::original_type& val) noexcept {
-			base_type::template set((IndexedType<_Index>)val);
+			base_type::template set((const IndexedType<_Index>&)val);
 		}
 
 
@@ -124,7 +168,7 @@ namespace cype {
 
 //	array with `IType`(Index Type), `ValType`(Value Type) and index values
 	template <class IType, class ValType, IType... _Indexes>
-	using array_type_index_args_of = array_index_args_of<size_t, _indexed_preset_types<ValType, size_t>::template single_type, _Indexes...>;
+	using array_type_index_args_of = array_index_args_of<size_t, indexed_types<ValType, size_t>::template single_type, _Indexes...>;
 
 
 //	preset template arguments `IType` and `IndexedType` of `array_index_args_of` class
@@ -178,6 +222,11 @@ namespace cype {
 //	alias of array_type_of
 	template <class ValType, size_t _Size>
 	using array = array_of_type<ValType, _Size>;
+
+
+//	natural typed array (index starts from 1, not 0)
+	template <class ValType, size_t _Size>
+	using natural_array = array_type_range_of<size_t, ValType, 1, _Size>;
 
 
 //	construct array with values
