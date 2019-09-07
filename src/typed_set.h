@@ -30,12 +30,6 @@ namespace cype {
 		typed_set(const typed_set<_Types...>& data)
 			: Types(data)... {}
 
-	//	extract value(s) of specified type(s)
-		template <class... _Types>
-		typed_set<_Types...> extract() const {
-			return {*this};
-		}
-
 	//	get value of specified type
 		template <class _Type>
 		_Type get() const {
@@ -48,12 +42,6 @@ namespace cype {
 			return get<typename type_list::template get<_Index>>();
 		}
 
-
-		template <class... _Types>
-		typed_set<_Types&...> extract_ref() {
-			return {*this};
-		}
-
 		template <class _Type>
 		_Type& get_ref() {
 			return {*this};
@@ -62,6 +50,28 @@ namespace cype {
 		template <size_t _Index>
 		auto get_ref() const {
 			return get_ref<type_list::template get<_Index>>();
+		}
+		
+
+	//	extract value(s) of specified type(s)
+		template <class... _Types>
+		typed_set<_Types...> extract() const {
+			return {*this};
+		}
+
+		template <class... _Types>
+		void extract_to(typed_set<_Types...>& out) const {
+			_void{((_Types&)out = get<_Types>(), 0)...};
+		}
+
+		template <class... _Types>
+		void extarct_to(_Types&... outs) const {
+			_void{(outs = get<_Types>(), 0)...};
+		}
+
+		template <class... _Types>
+		typed_set<_Types&...> extract_ref() {
+			return {*this};
 		}
 
 

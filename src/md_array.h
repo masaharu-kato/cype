@@ -1,4 +1,6 @@
+#pragma once
 #include "array.h"
+#include "md_indexed.h"
 
 namespace cype {
 	
@@ -60,7 +62,7 @@ namespace cype {
 //	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and sizes of each dimension
 	template <class ValType, size_t... _Sizes>
 	using md_array_of_type = md_array_of_indexed<
-		_indexed_preset_types<ValType, size_t>::template multi_type,
+		indexed_types<ValType, size_t>::template multi_type,
 		_Sizes...
 	>;
 	

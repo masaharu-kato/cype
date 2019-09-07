@@ -77,8 +77,8 @@ int main(void) {
 	static_assert(std::is_same_v<decltype(map1), typed_map<int, ID, Age, Phone>> , "type of map1 is incorrect.");
 	
 	std::cout << "map1: " << std::endl;
-	map1.for_each([](auto value){
-		std::cout << decltype(value)::type::TYPENAME << ": " << value.get() << std::endl;	
+	map1.for_each([](auto elm){
+		std::cout << decltype(elm)::qualify_type::TYPENAME << ": " << elm.value() << std::endl;	
 	});
 
 	typed_map<size_t, ID, Name, Belongs, Phone> map2((size_t)0);
@@ -86,16 +86,16 @@ int main(void) {
 	map2.set<Phone>(456);
 
 	std::cout << "map2: " << std::endl;
-	map2.for_each([](auto value){
-		std::cout << decltype(value)::type::TYPENAME << ": " << value.get() << std::endl;	
+	map2.for_each([](auto elm){
+		std::cout << decltype(elm)::qualify_type::TYPENAME << ": " << elm.value() << std::endl;	
 	});
 	
 	auto map3 = make_map(make_typed<Age>(32), make_typed<ID>(-105), make_typed<Belongs>(3));
 	map3.fill(12345);
 
 	std::cout << "map3: " << std::endl;
-	map3.for_each([](auto value){
-		std::cout << decltype(value)::type::TYPENAME << ": " << value.get() << std::endl;	
+	map3.for_each([](auto elm){
+		std::cout << decltype(elm)::qualify_type::TYPENAME << ": " << elm.value() << std::endl;	
 	});
 
 	return 0;

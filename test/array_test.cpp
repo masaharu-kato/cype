@@ -93,7 +93,16 @@ void output_tmplval_list() {
 		std::cout << ",";
 		output_tmplval_list<typename ValList::rests_list>();
 	}
-};
+}
+
+template <class ArrayType>
+void output_array(std::string name, const ArrayType& arr) {
+	std::cout << name << ": " << std::endl;
+	arr.for_each([](auto v){
+		std::cout << decltype(v)::index << ": " << v.value() << std::endl;
+	});
+	std::cout << std::endl;
+}
 
 
 
@@ -114,14 +123,15 @@ int main(void) {
 
 	auto arr1 = cype::make_array(10, -21, 32, -44, 58);
 	auto arr2 = arr1.rearrange<2, 0, 4, 1, 3>();
-
-	std::cout << "arr2:" << std::endl;
-	arr2.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
-
 	auto arr3 = arr2.extract<3, 0, 2>();
+	auto arr3_r = arr3.reindex();
 
-	std::cout << "arr3:" << std::endl;
-	arr3.for_each([](auto v){ std::cout << decltype(v)::index << ": " << v << std::endl; });
+	output_array("arr1", arr1);
+	output_array("arr2", arr2);
+	output_array("arr3", arr3);
+	output_array("arr3_r", arr3_r);
+
+
 
 	cype::array<int, 10> arrn;
 	arrn.fill(12);
@@ -129,10 +139,7 @@ int main(void) {
 	arrn.set<3>(34);
 	arrn.set<8>(85);
 
-	std::cout << "arrn: " << std::endl;
-	arrn.for_each([](auto v){
-		std::cout << "[" << decltype(v)::index << "] " << v.value() << std::endl;
-	});
+	output_array("arrn", arrn);
 
 
 	cype::array<std::string, 10> arr4;
@@ -140,11 +147,8 @@ int main(void) {
 
 	arr4.set<3>("Element 3");
 	arr4.set<8>("Element 8");
-
-	std::cout << "arr4: " << std::endl;
-	arr4.for_each([](auto v){
-		std::cout << "[" << decltype(v)::index << "] " << v.value() << std::endl;
-	});
+	
+	output_array("arr4", arr4);
 
 	return 0;
 }

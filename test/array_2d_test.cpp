@@ -17,13 +17,23 @@ using namespace cype;
 //}
 
 
-template <class Type>
-void output_array(std::string name, const Type& arr) {
+template <class ArrayType>
+void output_array(std::string name, const ArrayType& arr) {
 	std::cout << name << ": [";
 	arr.for_each([](auto elm){
 		std::cout << elm.value() << "\t";
 	});
 	std::cout << "]" << std::endl;
+}
+
+template <class MatrixType>
+void output_matrix(const MatrixType& mat) {
+	mat.for_each_i1s([](auto arr){
+		arr.for_each([](auto elm){
+			std::cout << elm.value() << "\t";
+		});
+		std::cout << std::endl;
+	});
 }
 
 
@@ -52,6 +62,9 @@ int main(void) {
 	mat0.set<2, 4>(2.4);
 	mat0.set<3, 4>(3.4);
 
+	std::cout << "mat0: " << std::endl;
+	output_matrix(mat0);
+	std::cout << std::endl;
 
 	auto vec1x = mat0.get_elms_on_i1<1>();
 	auto vec2x = mat0.get_elms_on_i1<2>();
@@ -73,6 +86,7 @@ int main(void) {
 	output_array("vecx2", vecx2);
 	output_array("vecx3", vecx3);
 	output_array("vecx4", vecx4);
+	std::cout << std::endl;
 
 	return 0;
 }

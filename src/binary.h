@@ -1,3 +1,5 @@
+#pragma once
+
 namespace cype {
 
 //	binary type of specified type

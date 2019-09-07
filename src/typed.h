@@ -6,33 +6,51 @@ namespace cype {
 	template <class Type, class ValType>
 	class typed {
 	public:
-		using type = Type;
+		using qualify_type = Type;
+		using original_type = ValType;
 
 	private:
-		ValType value;
+		ValType _value;
 
 	public:
-		typed(const ValType& value) noexcept
-			: value(value) {}
+	//	default constructor
+		typed() = default;
+
+	//	construct with original value type
+		typed(const ValType& _value) noexcept
+			: _value(_value) {}
 
 		template <class _Type>
 		explicit typed(const typed<_Type, ValType>& v)
-			: value(v.value) {}
+			: _value(v._value) {}
 
 		template <class _ValType>
 		typed(const typed<Type, _ValType>& v)
-			: value(v.value) {}
+			: _value(v.value()) {}
 
-		ValType get() const noexcept {
-			return value;
+	//	get value
+		ValType value() const noexcept {
+			return _value;
 		}
 
+	//	get value with reference
+		ValType& value() noexcept {
+			return _value;
+		}
+
+	//	get value
 		operator ValType() const noexcept {
-			return value;
+			return _value;
+		}
+
+	//	get value with reference
+		operator ValType&() noexcept {
+			return _value;
 		}
 
 	};
 
+//	make typed
 	template <class Type, class ValType>
 	auto make_typed(const ValType& value) {
 		return typed<Type, ValType>(value);
