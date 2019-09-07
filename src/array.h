@@ -10,6 +10,10 @@ namespace cype {
 	class array_index_args_of : public typed_set<IndexedType<_Indexes>...> {
 		using base_type = typed_set<IndexedType<_Indexes>...>;
 
+	//	to avoid MSVC's bug
+		template <IType _Index>
+		using original_type_at = typename IndexedType<_Index>::original_type;
+
 	public:
 	//	using base_type::typed_set;
 
@@ -24,8 +28,8 @@ namespace cype {
 			: base_type(vals...) {}
 
 	//	construct with non-indexed (original) values
-		array_index_args_of(typename IndexedType<_Indexes>::original_type... vals) noexcept
-			: base_type(IndexedType<_Indexes>(vals)...) {}
+		array_index_args_of(original_type_at<_Indexes>... vals) noexcept
+		 	: base_type(IndexedType<_Indexes>(vals)...) {}
 
 	//	construct from different typed array
 		template <template <IType> class _IndexedType>
@@ -94,13 +98,13 @@ namespace cype {
 	//	set value of specified index
 		template <IType _Index>
 		void set(const IndexedType<_Index>& val) noexcept {
-			base_type::template set((IndexedType<_Index>)val);
+			base_type::template set(val);
 		}
 
 	//	set value of specified index using raw (original) typed value
 		template <IType _Index>
 		void set(const typename IndexedType<_Index>::original_type& val) noexcept {
-			base_type::template set((IndexedType<_Index>)val);
+			base_type::template set((const IndexedType<_Index>&)val);
 		}
 
 
@@ -178,6 +182,11 @@ namespace cype {
 //	alias of array_type_of
 	template <class ValType, size_t _Size>
 	using array = array_of_type<ValType, _Size>;
+
+
+//	natural typed array (index starts from 1, not 0)
+	template <class ValType, size_t _Size>
+	using natural_array = array_type_range_of<size_t, ValType, 1, _Size>;
 
 
 //	construct array with values
