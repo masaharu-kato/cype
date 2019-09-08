@@ -37,13 +37,96 @@ void output_matrix(const MatrixType& mat) {
 }
 
 
-//using matrix44 = array_2d_of_indexed<
-//	_indexed_preset_types<double, size_t>::template double_type,
-//	index_sequence<0, 3>,
-//	index_sequence<0, 3>
-//>;
-
 using matrix44 = natural_array_2d<double, 4, 4>;
+
+//template <size_t NRow, size_t NCol>
+//class matrix : public natural_array_2d<double, 4, 4> {
+//
+//};
+//
+//template <class ValType>
+//struct _matrix_valtype_of : _static_class {
+//
+//	template <size_t IRow, size_t ICol>
+//	using MVal = indexed_types<ValType, size_t>::template double_type<IRow, ICol>;
+//
+//	template <size_t NRows, size_t NCols>
+//	using Matrix = natural_array_2d<ValType, NRows, NCols>;
+//
+//	template <size_t... IRows>
+//	struct rows_of : _static_class {
+//
+//		using row_indexes = tmplval_list<size_t, IRows...>;
+//		static constexpr size_t NRows = row_indexes::size;
+//
+//
+//		template <size_t... ICols>
+//		struct cols_of : _static_class {
+//			
+//			using col_indexes = tmplval_list<size_t, ICols...>;
+//			static constexpr size_t NCols = col_indexes::size;
+//
+//			
+//			using Mat = Matrix<NRows, NCols>; 
+//
+//			static Mat add(const Mat& mat1, const Mat& mat2) {
+//
+//			}
+//
+//			template <size_t... IRCols>
+//			struct lcols_of : _static_class {
+//
+//				using lcol_indexes = tmplval_list<size_t, ILCols...>;
+//				static constexpr size_t NRCols = lcol_indexes::size;
+//
+//				using LMat = Mat;
+//				using RMat = Matrix<NCols, NRCols>;
+//				using MMat = Matrix<NRows, NRCols>;
+//
+//				struct mul_operation {
+//					const LMat lmat;
+//					const RMat rmat;
+//
+//					mul_operation(const LMat& lmat, const RMat& rmat)
+//						: lmat(lmat), rmat(rmat) {}
+//
+//
+//					MMat mul() const {
+//						return mul_lines<row_indexes.first, row_indexes.last>();
+//					};
+//
+//					template <size_t IRow, size_t ICol>
+//					MVal<IRow, ICol> lget() const { return lmat.template get<IRow, ICol>(); }
+//
+//					template <size_t IRow, size_t ICol>
+//					MVal<IRow, ICol> rget() const { return rmat.template get<IRow, ICol>(); }
+//
+//					template <size_t ILine, size_t ILineLast, class... Args>
+//					MMat mul_lines(Args&&... args) const {
+//						if constexpr (ILine > ILineLast) {
+//							return MMat(args...);
+//						}else{
+//							return mul_lines<ILine + 1>(mul_elm<ILine, ICols>()...);
+//						}
+//					}
+//
+//					template <size_t ILRow, size_t IRCol>
+//					MVal<ILRow, IRCol> mul_elm() const {
+//						return (lget<IRows, IRCol>() * rget<ILRow, ICols>() + ...;
+//					}
+//
+//				};
+//
+//
+//			};
+//
+//
+//		};
+//
+//	};
+//
+//};
+//
 
 
 int main(void) {

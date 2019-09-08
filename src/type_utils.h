@@ -4,33 +4,32 @@
 #include "_utility.h"
 
 namespace cype {
-namespace type_utils {
 
 //	returns true if _Type1 equals to _Type2
 	template <class _Type1, class _Type2>
-	constexpr bool is_same = std::is_same_v<_Type1, _Type2>;
+	constexpr bool is_same_type = std::is_same_v<_Type1, _Type2>;
 
 //	list of types
 	template <class... Types>
-	class list;
+	class type_list;
 	
 //	specialization of `list` which has type(s)
 	template <class First, class... Rests>
-	class list<First, Rests...> : _static_class {
+	class type_list<First, Rests...> : _static_class {
 	public:
 		template <class... Types>
-		friend class list;
+		friend class type_list;
 
 	//	push new value(s) to back
 		template <class... _Types>
-		using push_back = list<First, Rests..., _Types...>;
+		using push_back = type_list<First, Rests..., _Types...>;
 		
 	//	push new value(s) to front
 		template <class... _Types>
-		using push_front = list<_Types..., First, Rests...>;
+		using push_front = type_list<_Types..., First, Rests...>;
 		
 	//	list of 2nd and later value(s)
-		using rests_list = list<Rests...>;
+		using rests_list = type_list<Rests...>;
 		
 	//	get specified value
 		template <size_t _Index>
@@ -50,7 +49,7 @@ namespace type_utils {
 	//	helper function for `contains`
 		template <class Type>
 		static constexpr bool _contains() {
-			if constexpr(is_same<First, Type>){
+			if constexpr(is_same_type<First, Type>){
 				return true;
 			}else{
 				if constexpr(sizeof...(Rests) != 0){
@@ -91,12 +90,12 @@ namespace type_utils {
 
 	//	get unioned list with new type(s)
 		template <class... _Types>
-		using union_with = typename list<First, Rests..., _Types...>::remove_duplicates;
+		using union_with = typename type_list<First, Rests..., _Types...>::remove_duplicates;
 
 	//	get list without specified type(s)
 		template <class... _Types>
 		using remove = std::conditional_t<
-			list<_Types...>::template contains<First>,
+			type_list<_Types...>::template contains<First>,
 			typename rests_list::template remove<_Types...>,
 			typename rests_list::template remove<_Types...>::template push_front<First>
 		>;
@@ -106,18 +105,18 @@ namespace type_utils {
 
 //	specialization of `list` which has no type
 	template <>
-	class list<> {
+	class type_list<> {
 	public:
 		template <class... Types>
-		friend class list;
+		friend class type_list;
 
 	//	push new type(s) to back
 		template <class... _Types>
-		using push_back = list<_Types...>;
+		using push_back = type_list<_Types...>;
 		
 	//	push new type(s) to front
 		template <class... _Types>
-		using push_front = list<_Types...>;
+		using push_front = type_list<_Types...>;
 
 		template <size_t _Index>
 		using get = void;
@@ -129,12 +128,11 @@ namespace type_utils {
 		template <class _Type>
 		static constexpr bool contains = false;
 
-		using remove_duplicates = list<>;
+		using remove_duplicates = type_list;
 
 		template <class... _Types>
-		using remove = list<>;
+		using remove = type_list;
 
 	};
 
-}
 }

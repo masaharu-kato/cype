@@ -149,6 +149,12 @@ namespace cype {
 		template <size_t _Index>
 		static constexpr ValType get = _get<_Index>();
 
+	//	get first value
+		static constexpr ValType first = get<0>;
+
+	//	get last value
+		static constexpr ValType last = get<size - 1>;
+
 	//	get particial list
 		template <size_t _FirstIndex, size_t _LastIndex>
 		using range_of = typename decltype(_range_of<_FirstIndex, _LastIndex>())::type;
