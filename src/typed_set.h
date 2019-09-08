@@ -10,7 +10,11 @@ namespace cype {
 	class typed_set : public Types... {
 	public:
 		using this_type = typed_set<Types...>;
-		using type_list = type_utils::list<Types...>;
+		using this_type_list = type_list<Types...>;
+
+		template <size_t I>
+		using type_of = typename this_type_list::template get<I>;
+
 		constexpr static size_t size = sizeof...(Types);
 
 	//	default constructor
@@ -31,25 +35,30 @@ namespace cype {
 			: Types(data)... {}
 
 	//	get value of specified type
-		template <class _Type>
-		_Type get() const {
+		template <class T>
+		T get() const {
 			return {*this};
+		}
+
+		template <class T>
+		void get_to(const T& out) const {
+			out = get<T>();
 		}
 
 	//	Get value of specified index
-		template <size_t _Index>
-		auto get() const {
-			return get<typename type_list::template get<_Index>>();
+		template <size_t I>
+		type_of<I> get() const {
+			return get<type_of<I>>();
 		}
 
-		template <class _Type>
-		_Type& get_ref() {
+		template <class T>
+		T& get_ref() {
 			return {*this};
 		}
 
-		template <size_t _Index>
-		auto get_ref() const {
-			return get_ref<type_list::template get<_Index>>();
+		template <size_t I>
+		type_of<I>& get_ref() const {
+			return get_ref<type_of<I>&>();
 		}
 		
 
@@ -76,12 +85,14 @@ namespace cype {
 
 
 	//	Get offset of specified type
-		template <class _Type>
+		template <class T>
 		size_t offset_of() const {
+		//	offset value
 			static size_t offset = (size_t)-1;
 
 			if(offset == (size_t)-1) {	
-				offset = (char*)&(const _Type&)*this - (char*)this;
+			// calc offset value
+				offset = (char*)&(const T&)*this - (char*)this;
 			}
 
 			return offset;
@@ -114,9 +125,9 @@ namespace cype {
 
 
 	//	set value of specified type
-		template <class _Type>
-		void set(const _Type& val) {
-			(_Type&)*this = val;
+		template <class T>
+		void set(const T& val) {
+			(T&)*this = val;
 		}
 
 	//	set values of types
@@ -135,7 +146,7 @@ namespace cype {
 	//	remove specified type(s)
 		template <class... _Types>
 		auto removed() const {
-			return (typename type_list::template remove<_Types...>::template apply_to<typed_set>)*this;
+			return (typename this_type_list::template remove<_Types...>::template apply_to<typed_set>)*this;
 		}
 
 	//	overwrite with value(s) of type(s)
@@ -194,10 +205,10 @@ namespace cype {
 		}
 
 	//	reduce with function `func`, which receives two values, from specified index (to last index)
-		template <size_t _Index, class _Reducer, class _ValType>
+		template <size_t I, class _Reducer, class _ValType>
 		auto reduce_from(const _Reducer& reducer, const _ValType& val) const {
-			if constexpr(_Index < size) {
-				return reduce_from<_index_add<_Index, 1>>(reducer, reducer(val, get<_Index>()));
+			if constexpr(I < size) {
+				return reduce_from<_index_add<I, 1>>(reducer, reducer(val, get<I>()));
 			}else{
 				return val;
 			}
@@ -223,10 +234,10 @@ namespace cype {
 		}
 
 	//	reduce with function `_StaticReducer::call`, which receives two values, from specified index (to last index)
-		template <size_t _Index, class _StaticReducer, class _ValType>
+		template <size_t I, class _StaticReducer, class _ValType>
 		auto reduce_from(const _ValType& val) const {
-			if constexpr(_Index < size) {
-				return reduce_from<_index_add<_Index, 1>, _StaticReducer>(_StaticReducer::call(val, get<_Index>()));
+			if constexpr(I < size) {
+				return reduce_from<_index_add<I, 1>, _StaticReducer>(_StaticReducer::call(val, get<I>()));
 			}else{
 				return val;
 			}
@@ -250,9 +261,9 @@ namespace cype {
 		//}
 
 	//	Construct specified type (apply own values to constructer arguments)
-		template <class _Type>
-		_Type construct() const {
-			return _Type((Types)(*this)...);	
+		template <class T>
+		T construct() const {
+			return T((Types)(*this)...);	
 		}
 
 	//	Create instances of specified type which receives one type as template argument
@@ -262,9 +273,9 @@ namespace cype {
 		}
 		
 	//	Generate specified type (apply own values to constructer arguments)
-		template <class _Type>
-		_Type* new_() const {
-			return new _Type((Types)(*this)...);
+		template <class T>
+		T* new_() const {
+			return new T((Types)(*this)...);
 		}
 
 	//	Generate instances of specified type which receives one type as template argument

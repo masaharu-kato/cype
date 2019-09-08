@@ -1,6 +1,8 @@
 #include <iostream>
 #include "array.h"
 
+using namespace cype;
+
 //	sample class `Value`
 template <size_t I>
 struct Value {
@@ -39,7 +41,7 @@ public:
 
 //	sample class `Vector`
 template <size_t N>
-struct Vector : public cype::array_range_of<size_t, ::Value, 1, N> {
+struct Vector : public array_itype_idxed_of<size_t, ::Value>::template range_of<1, N> {
 private:
 
 	struct _OpPlus  { template <class _T> static _T call(_T v) { return +v; } };
@@ -50,13 +52,13 @@ private:
 
 public:
 
-	using _base_type = cype::array_range_of<size_t, ::Value, 1, N>;
+	using base_type = array_itype_idxed_of<size_t, ::Value>::template range_of<1, N>;
 
-	using _base_type::_base_type;
+	using base_type::base_type;
 
 	Vector() = default;
 
-	Vector(const _base_type& v) : _base_type(v) {}
+	Vector(const base_type& v) : base_type(v) {}
 
 
 	void show() const {

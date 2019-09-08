@@ -6,7 +6,7 @@ namespace cype {
 	
 //	multi-dimensional array with `size_t`, `IndexedType`(indexes-templated value type) and sizes of each dimension
 	template <template <size_t...> class MultiIndexedType, size_t... _Sizes>
-	using _md_array_of_indexed_base = array_indexes_of<
+	using _md_array_of_indexed_base = array_idxlist_idxed_of<
 		typename _md_indexed_size_args_of<size_t, MultiIndexedType, _Sizes...>::indexes,
 		_md_indexed_size_args_of<size_t, MultiIndexedType, _Sizes...>::template type
 	>;

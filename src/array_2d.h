@@ -4,52 +4,68 @@
 
 namespace cype {
 	
-	template <template <size_t, size_t> class DoubleIndexed, class ISeq1, class ISeq2>
-	using array_2d_of_indexed_base = array_indexes_of<
-		typename _preset_double_index<DoubleIndexed>::template preset_index_sequences<ISeq1, ISeq2>::indexes,
-		_preset_double_index<DoubleIndexed>::template preset_index_sequences<ISeq1, ISeq2>::template type
+//	base type of `array_2d_iseqs` class
+	template <
+		template <size_t, size_t> class DblIdxed,
+		class ISeq1,
+		class ISeq2
+	>
+	using array_2d_of_indexed_base = array_idxlist_idxed_of<
+		typename _preset_double_index<DblIdxed>::template preset_index_sequences<ISeq1, ISeq2>::indexes,
+		_preset_double_index<DblIdxed>::template preset_index_sequences<ISeq1, ISeq2>::template type
 	>;
 
-
-	template <template <size_t, size_t> class DoubleIndexed, class ISeq1, class ISeq2>
-	class array_2d_of_indexed : public array_2d_of_indexed_base<DoubleIndexed, ISeq1, ISeq2> {
+//	2-dimensional array
+	template <
+		template <size_t, size_t> class DblIdxed,	//	2 indexes-templated value type
+		class ISeq1,	//	sequence (tmplval_list) of index-1
+		class ISeq2		//	sequence (tmplval_list) of index-2
+	>
+	class array_2d_dblidxed_iseqs : public array_2d_of_indexed_base<DblIdxed, ISeq1, ISeq2> {
 	public:
-		using this_type = array_2d_of_indexed;
-		using base_type = array_2d_of_indexed_base<DoubleIndexed, ISeq1, ISeq2>;
+		using this_type = array_2d_dblidxed_iseqs;
+		using this_indexes_1 = ISeq1;
+		using this_indexes_2 = ISeq2;
+
+		template <size_t _I1, size_t _I2>
+		using this_double_indexed_type = DblIdxed<_I1, _I2>;
+
+		using base_type = array_2d_of_indexed_base<DblIdxed, ISeq1, ISeq2>;
 		using base_type::base_type;
 		using base_type::get;
+		using base_type::get_raw;
 		using base_type::set;
 
 	//	get value of specified index pair
 		template <size_t _I1, size_t _I2>
-		DoubleIndexed<_I1, _I2>
+		DblIdxed<_I1, _I2>
 		get() const noexcept {
-			return base_type::template get<DoubleIndexed<_I1, _I2>>();
+			return base_type::template get<DblIdxed<_I1, _I2>>();
 		}
 
 	//	get raw (original) typed value of specified index
 		template <size_t _I1, size_t _I2>
-		typename DoubleIndexed<_I1, _I2>::original_type
+		typename DblIdxed<_I1, _I2>::original_type
 		get_raw() const noexcept {
-			return (typename DoubleIndexed<_I1, _I2>::original_type)get<_I1, _I2>();
+			return (typename DblIdxed<_I1, _I2>::original_type)get<_I1, _I2>();
 		}
 
 
 	//	set value of specified index
 		template <size_t _I1, size_t _I2>
-		void set(const DoubleIndexed<_I1, _I2>& val) noexcept {
+		void set(const DblIdxed<_I1, _I2>& val) noexcept {
 			base_type::template set(val);
 		}
 
 	//	set value of specified index using raw (original) typed value
 		template <size_t _I1, size_t _I2>
-		void set(const typename DoubleIndexed<_I1, _I2>::original_type& val) noexcept {
-			base_type::template set((const DoubleIndexed<_I1, _I2>&)val);
+		void set(const typename DblIdxed<_I1, _I2>::original_type& val) noexcept {
+			base_type::template set((const DblIdxed<_I1, _I2>&)val);
 		}
 
 	//	cast to another indexed-type
-		template <template <size_t, size_t> class _DoubleIndexed>
-		array_2d_of_indexed<_DoubleIndexed, ISeq1, ISeq2>
+		template <template <size_t, size_t> class _DblIdxed>
+		array_2d_dblidxed_iseqs<_DblIdxed, ISeq1, ISeq2>
 		cast_to() const {
 			return {*this};
 		}
@@ -60,7 +76,7 @@ namespace cype {
 		class _index_1_of : _static_class {
 		private:
 			template <size_t _I2>
-			static constexpr size_t c_index = _preset_double_index<DoubleIndexed>
+			static constexpr size_t c_index = _preset_double_index<DblIdxed>
 				::template preset_index_sequences<ISeq1, ISeq2>
 				::template preset_index_1<_I1>
 				::template index<_I2>;
@@ -85,7 +101,7 @@ namespace cype {
 		struct _index_2_of : _static_class {
 		private:
 			template <size_t _I1>
-			static constexpr size_t c_index = _preset_double_index<DoubleIndexed>
+			static constexpr size_t c_index = _preset_double_index<DblIdxed>
 				::template preset_index_sequences<ISeq1, ISeq2>
 				::template preset_index_2<_I2>
 				::template index<_I1>;
@@ -148,26 +164,28 @@ namespace cype {
 
 
 	template <class ValType, class ISeq1, class ISeq2>
-	using array_2d_of_type = array_2d_of_indexed<
+	using array_2d_type_iseqs = array_2d_dblidxed_iseqs<
 		indexed_types<ValType, size_t>::template double_type,
 		ISeq1,
 		ISeq2
 	>;
 	
 
-	template <class ValType, size_t _Sz1, size_t _Sz2>
-	using array_2d = array_2d_of_type<
+	template <class ValType, size_t Sz1, size_t Sz2>
+	using array_2d_type_of = array_2d_type_iseqs<
 		ValType,
-		index_sequence<0, _Sz1 - 1>,
-		index_sequence<0, _Sz2 - 1>
+		index_sequence<0, Sz1 - 1>,
+		index_sequence<0, Sz2 - 1>
 	>;
 
-	template <class ValType, size_t _Sz1, size_t _Sz2>
-	using natural_array_2d = array_2d_of_type<
-		ValType,
-		index_sequence<1, _Sz1>,
-		index_sequence<1, _Sz2>
-	>;
+	template <class ValType, size_t Sz1, size_t Sz2>
+	using array_2d = array_2d_type_of<ValType, Sz1, Sz2>;
 
+	template <class ValType, size_t Sz1, size_t Sz2>
+	using natural_array_2d = array_2d_type_iseqs<
+		ValType,
+		index_sequence<1, Sz1>,
+		index_sequence<1, Sz2>
+	>;
 
 }
