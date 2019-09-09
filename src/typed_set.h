@@ -1,5 +1,5 @@
 #pragma once
-#include "type_utils.h"
+#include "type_list.h"
 #include "_utility.h"
 
 namespace cype {
@@ -15,7 +15,7 @@ namespace cype {
 		template <size_t I>
 		using type_of = typename this_type_list::template get<I>;
 
-		constexpr static size_t size = sizeof...(Types);
+		constexpr static size_t size = this_type_list::size;
 
 	//	default constructor
 		typed_set() = default;
