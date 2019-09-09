@@ -20,6 +20,10 @@ namespace cype {
 		template <class... Types>
 		friend class type_list;
 
+		using this_type = type_list;
+
+		static constexpr size_t size = 1 + sizeof...(Rests);
+
 	//	push new value(s) to back
 		template <class... _Types>
 		using push_back = type_list<First, Rests..., _Types...>;
@@ -32,11 +36,11 @@ namespace cype {
 		using rests_list = type_list<Rests...>;
 		
 	//	get specified value
-		template <size_t _Index>
+		template <size_t I>
 		using get = std::conditional_t<
-			_Index == 0,
+			I == 0,
 			First,
-			typename rests_list::template get<_Index - 1>
+			typename rests_list::template get<I - 1>
 		>;
 
 	//	apply own type(s) to specified class
@@ -47,13 +51,13 @@ namespace cype {
 	private:
 		
 	//	helper function for `contains`
-		template <class Type>
+		template <class T>
 		static constexpr bool _contains() {
-			if constexpr(is_same_type<First, Type>){
+			if constexpr(is_same_type<First, T>){
 				return true;
 			}else{
 				if constexpr(sizeof...(Rests) != 0){
-					return rests_list::template contains<Type>;
+					return rests_list::template contains<T>;
 				}
 			}
 			return false;
@@ -75,8 +79,8 @@ namespace cype {
 	public:
 
 	//	returns whether contains specified type or not
-		template <class _Type>
-		constexpr static bool contains = _contains<_Type>();
+		template <class T>
+		constexpr static bool contains = _contains<T>();
 
 	//	returns whether own type(s) are unique (no duplicates)
 		constexpr static bool is_unique = _is_unique();
@@ -110,6 +114,10 @@ namespace cype {
 		template <class... Types>
 		friend class type_list;
 
+		using this_type = type_list;
+
+		static constexpr size_t size = 0;
+
 	//	push new type(s) to back
 		template <class... _Types>
 		using push_back = type_list<_Types...>;
@@ -118,14 +126,14 @@ namespace cype {
 		template <class... _Types>
 		using push_front = type_list<_Types...>;
 
-		template <size_t _Index>
+		template <size_t I>
 		using get = void;
 
 		template <template <class...> class _Class>
 		using apply_to = _Class<>;
 
 
-		template <class _Type>
+		template <class T>
 		static constexpr bool contains = false;
 
 		using remove_duplicates = type_list;
