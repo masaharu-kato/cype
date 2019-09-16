@@ -5,7 +5,7 @@
 
 namespace cype {
 
-	class type_objed_set : std::unordered_map<type_obj, binary> {
+	class type_objed_set {
 	public:
 		type_objed_set() = default;
 

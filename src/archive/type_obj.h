@@ -1,5 +1,5 @@
 #pragma once
-#include "_utility.h"
+#include "../_utility.h"
 #include <string>
 #include <functional>
 #include <type_traits>
@@ -19,17 +19,21 @@ namespace cype {
 
 	public:
 		template <class T>
-		type_obj(type_as_value<T>, type_name_t type_name) :
-			type_size(sizeof(T)),
-			type_name_t(type_name),
-			new_func([](const auto& arg) -> void* {
-				return new T(arg);
-			}),
-			new_array_func([](size_t n) -> void* {
-				return new T[n];
-			})
-		{}
+		type_obj(type_as_value<T>, type_name_t type_name);
 
 	};
+
+	
+	template <class T>
+	type_obj<T>::type_obj(type_as_value<T>, type_name_t type_name) :
+		type_size(sizeof(T)),
+		type_name_t(type_name),
+		new_func([](const auto& arg) -> void* {
+			return new T(arg);
+		}),
+		new_array_func([](size_t n) -> void* {
+			return new T[n];
+		})
+	{}
 
 }
